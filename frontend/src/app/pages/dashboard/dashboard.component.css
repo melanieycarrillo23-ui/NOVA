@@ -1,0 +1,166 @@
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.dashboard-welcome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 58, 237, 0.45);
+}
+
+.summary-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.summary-label {
+  font-weight: 700;
+  color: var(--secondary);
+}
+
+.summary-description {
+  margin-top: 4px;
+
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.dashboard-main,
+.role-section {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.8fr);
+  gap: 18px;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.activity-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 18px;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.activity-item > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.activity-item span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.activity-value {
+  flex-shrink: 0;
+
+  color: #fff !important;
+
+  font-size: 1.35rem !important;
+  font-weight: 800;
+}
+
+.activity-link {
+  margin-top: 18px;
+
+  color: var(--secondary);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.activity-link:hover {
+  color: #fff;
+}
+
+.role-value {
+  margin-top: 18px;
+
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.role-actions,
+.admin-actions {
+  display: grid;
+  gap: 10px;
+
+  margin-top: 16px;
+}
+
+.admin-actions {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 950px) {
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-main,
+  .role-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 650px) {
+
+  .dashboard-welcome {
+    flex-direction: column;
+  }
+
+  .dashboard-welcome .btn {
+    width: 100%;
+  }
+
+  .admin-actions {
+    grid-template-columns: 1fr;
+  }
+}

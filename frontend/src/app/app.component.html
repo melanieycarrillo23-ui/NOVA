@@ -1,0 +1,291 @@
+<router-outlet
+  *ngIf="esAuthPage(); else appShell"
+></router-outlet>
+
+<ng-template #appShell>
+
+  <div class="shell">
+
+    <aside
+      class="sidebar"
+      [class.collapsed]="menuContraido()"
+    >
+
+      <div class="sidebar-header">
+
+        <a
+          routerLink="/dashboard"
+          class="brand"
+        >
+          <div class="brand-mark">
+            N
+          </div>
+
+          <div class="brand-copy">
+            <div class="brand-name">
+              NOVA
+            </div>
+
+            <div class="brand-sub">
+              Eventos que brillan
+            </div>
+          </div>
+        </a>
+
+        <button
+          type="button"
+          class="menu-toggle"
+          (click)="alternarMenu()"
+          [attr.aria-label]="
+            menuContraido()
+              ? 'Abrir menú'
+              : 'Contraer menú'
+          "
+        >
+          ☰
+        </button>
+
+      </div>
+
+
+      <nav class="nav">
+
+        <div
+          class="nav-section"
+          *ngIf="!esSoloUsuario()"
+        >
+          GENERAL
+        </div>
+
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Inicio
+        </a>
+
+        <a
+          routerLink="/eventos"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Explorar eventos
+        </a>
+
+        <a
+          routerLink="/mis-inscripciones"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Mis inscripciones
+        </a>
+
+        <a
+          routerLink="/mis-entradas"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          Mis entradas
+        </a>
+
+
+        <ng-container
+          *ngIf="
+            auth.tieneRol(
+              'STAFF',
+              'ORGANIZADOR',
+              'ADMIN'
+            )
+          "
+        >
+
+          <div class="nav-section">
+            OPERACIÓN
+          </div>
+
+          <a
+            routerLink="/eventos-asignados"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Eventos asignados
+          </a>
+
+          <a
+            routerLink="/validar-qr"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Validar QR
+          </a>
+
+          <a
+            routerLink="/asistentes"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Asistentes
+          </a>
+
+        </ng-container>
+
+
+        <ng-container
+          *ngIf="
+            auth.tieneRol(
+              'ORGANIZADOR',
+              'ADMIN'
+            )
+          "
+        >
+
+          <div class="nav-section">
+            ORGANIZACIÓN
+          </div>
+
+          <a
+            routerLink="/mis-eventos"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Mis eventos
+          </a>
+
+          <a
+            routerLink="/crear-evento"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Crear evento
+          </a>
+
+          <a
+            routerLink="/administrar-evento"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Administrar evento
+          </a>
+
+          <a
+            routerLink="/reportes"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Reportes
+          </a>
+
+        </ng-container>
+
+
+        <ng-container
+          *ngIf="auth.tieneRol('ADMIN')"
+        >
+
+          <div class="nav-section">
+            ADMINISTRACIÓN
+          </div>
+
+          <a
+            routerLink="/usuarios"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Usuarios
+          </a>
+
+          <a
+            routerLink="/categorias"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Categorías
+          </a>
+
+        </ng-container>
+
+      </nav>
+
+
+      <div class="sidebar-footer">
+
+        <a
+          routerLink="/perfil"
+          class="user-card"
+        >
+
+          <div class="avatar">
+            {{
+              (
+                auth.usuario()?.nombre_completo ||
+                'N'
+              ).charAt(0)
+            }}
+          </div>
+
+          <div class="user-copy">
+
+            <strong>
+              {{
+                auth.usuario()?.nombre_completo ||
+                'Usuario NOVA'
+              }}
+            </strong>
+
+            <span>
+              {{
+                (
+                  auth.usuario()?.roles ||
+                  []
+                ).join(' · ')
+              }}
+            </span>
+
+          </div>
+
+        </a>
+
+        <button
+          class="btn btn-ghost btn-full"
+          (click)="salir()"
+        >
+          Cerrar sesión
+        </button>
+
+      </div>
+
+    </aside>
+
+
+    <div class="main-area">
+
+      <header class="topbar">
+
+        <div>
+          <strong>NOVA</strong>
+
+          <span class="topbar-muted">
+            Gestión de eventos y acceso QR
+          </span>
+        </div>
+
+        <a
+          routerLink="/perfil"
+          class="chip"
+        >
+          Mi cuenta
+        </a>
+
+      </header>
+
+
+      <main class="content">
+        <router-outlet></router-outlet>
+      </main>
+
+    </div>
+
+  </div>
+
+</ng-template>

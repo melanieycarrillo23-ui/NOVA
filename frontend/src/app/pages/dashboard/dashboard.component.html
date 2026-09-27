@@ -1,0 +1,438 @@
+<section class="dashboard">
+
+  <header class="dashboard-welcome">
+    <div>
+      <h1 class="page-title">
+        Bienvenido,
+        {{ auth.usuario()?.nombre_completo }}
+      </h1>
+
+      <p class="page-subtitle">
+        Encuentra tus próximos eventos
+        y consulta tu actividad en NOVA.
+      </p>
+    </div>
+
+    <a
+      routerLink="/eventos"
+      class="btn btn-primary"
+    >
+      Explorar eventos
+    </a>
+  </header>
+
+
+  <!-- RESUMEN -->
+
+  <section class="summary-grid">
+
+    <a
+      routerLink="/eventos"
+      class="card summary-card"
+    >
+      <span class="summary-value">
+        {{ proximosEventos().length }}
+      </span>
+
+      <span class="summary-label">
+        Próximos eventos
+      </span>
+
+      <span class="summary-description">
+        Eventos disponibles próximamente
+      </span>
+    </a>
+
+
+    <a
+      routerLink="/mis-inscripciones"
+      class="card summary-card"
+    >
+      <span class="summary-value">
+        {{ inscripciones().length }}
+      </span>
+
+      <span class="summary-label">
+        Mis inscripciones
+      </span>
+
+      <span class="summary-description">
+        Eventos en los que estás registrado
+      </span>
+    </a>
+
+
+    <a
+      routerLink="/mis-entradas"
+      class="card summary-card"
+    >
+      <span class="summary-value">
+        {{ historial() }}
+      </span>
+
+      <span class="summary-label">
+        Historial
+      </span>
+
+      <span class="summary-description">
+        Entradas utilizadas o canceladas
+      </span>
+    </a>
+
+  </section>
+
+
+  <!-- CONTENIDO DEL USUARIO -->
+
+  <section class="dashboard-main">
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+          <h3>Próximos eventos</h3>
+
+          <p class="secondary">
+            Eventos que se realizarán próximamente.
+          </p>
+        </div>
+
+        <a
+          routerLink="/eventos"
+          class="chip"
+        >
+          Ver todos
+        </a>
+
+      </div>
+
+
+      <div class="event-list">
+
+        <a
+          *ngFor="
+            let evento of
+            proximosEventos().slice(0, 4)
+          "
+          [routerLink]="[
+            '/eventos',
+            evento.id
+          ]"
+          class="event-card"
+        >
+
+          <div class="event-top">
+
+            <strong>
+              {{ evento.nombre }}
+            </strong>
+
+            <span class="badge">
+              {{ evento.estado }}
+            </span>
+
+          </div>
+
+          <div class="event-meta">
+
+            <span>
+              {{
+                evento.fecha_hora_inicio
+                  | date:'mediumDate'
+              }}
+            </span>
+
+            <span>
+              {{
+                evento.lugar_nombre ||
+                evento.modalidad
+              }}
+            </span>
+
+          </div>
+
+        </a>
+
+
+        <div
+          class="empty"
+          *ngIf="!proximosEventos().length"
+        >
+          No hay próximos eventos disponibles.
+        </div>
+
+      </div>
+
+    </article>
+
+
+    <article class="card activity-card">
+
+      <div>
+        <h3>Mi actividad</h3>
+
+        <p class="secondary">
+          Resumen de tu participación en NOVA.
+        </p>
+      </div>
+
+
+      <div class="activity-list">
+
+        <a
+          routerLink="/mis-entradas"
+          class="activity-item"
+        >
+          <div>
+            <strong>
+              Entradas activas
+            </strong>
+
+            <span>
+              QR disponibles para tus eventos
+            </span>
+          </div>
+
+          <span class="activity-value">
+            {{ entradasActivas() }}
+          </span>
+        </a>
+
+
+        <a
+          routerLink="/mis-inscripciones"
+          class="activity-item"
+        >
+          <div>
+            <strong>
+              Inscripciones
+            </strong>
+
+            <span>
+              Eventos en los que estás inscrito
+            </span>
+          </div>
+
+          <span class="activity-value">
+            {{ inscripciones().length }}
+          </span>
+        </a>
+
+
+        <div class="activity-item">
+
+          <div>
+            <strong>
+              Asistencias registradas
+            </strong>
+
+            <span>
+              Entradas que ya fueron utilizadas
+            </span>
+          </div>
+
+          <span class="activity-value">
+            {{ entradasUtilizadas() }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <a
+        routerLink="/mis-entradas"
+        class="activity-link"
+      >
+        Consultar mis entradas
+      </a>
+
+    </article>
+
+  </section>
+
+
+  <!-- ORGANIZACIÓN -->
+
+  <section
+    class="role-section"
+    *ngIf="
+      auth.tieneRol(
+        'ORGANIZADOR',
+        'ADMIN'
+      )
+    "
+  >
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+          <h3>Organización</h3>
+
+          <p class="secondary">
+            Eventos que administras en NOVA.
+          </p>
+        </div>
+
+        <a
+          routerLink="/mis-eventos"
+          class="chip"
+        >
+          Ver eventos
+        </a>
+
+      </div>
+
+      <div class="role-value">
+        {{ misEventos().length }}
+      </div>
+
+    </article>
+
+
+    <article class="card">
+
+      <h3>Acciones de organización</h3>
+
+      <div class="role-actions">
+
+        <a
+          routerLink="/crear-evento"
+          class="btn btn-primary"
+        >
+          Crear evento
+        </a>
+
+        <a
+          routerLink="/mis-eventos"
+          class="btn btn-secondary"
+        >
+          Administrar eventos
+        </a>
+
+        <a
+          routerLink="/reportes"
+          class="btn btn-ghost"
+        >
+          Consultar reportes
+        </a>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- OPERACIÓN -->
+
+  <section
+    class="role-section"
+    *ngIf="
+      auth.tieneRol(
+        'STAFF',
+        'ORGANIZADOR',
+        'ADMIN'
+      )
+    "
+  >
+
+    <article class="card">
+
+      <div class="card-header">
+
+        <div>
+          <h3>Operación</h3>
+
+          <p class="secondary">
+            Eventos en los que formas parte
+            del equipo.
+          </p>
+        </div>
+
+        <a
+          routerLink="/eventos-asignados"
+          class="chip"
+        >
+          Ver asignados
+        </a>
+
+      </div>
+
+      <div class="role-value">
+        {{ asignados().length }}
+      </div>
+
+    </article>
+
+
+    <article class="card">
+
+      <h3>Acciones de operación</h3>
+
+      <div class="role-actions">
+
+        <a
+          routerLink="/validar-qr"
+          class="btn btn-primary"
+        >
+          Validar entrada QR
+        </a>
+
+        <a
+          routerLink="/asistentes"
+          class="btn btn-ghost"
+        >
+          Consultar asistentes
+        </a>
+
+      </div>
+
+    </article>
+
+  </section>
+
+
+  <!-- ADMIN -->
+
+  <section
+    class="card admin-section"
+    *ngIf="auth.tieneRol('ADMIN')"
+  >
+
+    <div class="card-header">
+
+      <div>
+        <h3>Administración</h3>
+
+        <p class="secondary">
+          Gestión general de la plataforma NOVA.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="admin-actions">
+
+      <a
+        routerLink="/usuarios"
+        class="btn btn-secondary"
+      >
+        Administrar usuarios
+      </a>
+
+      <a
+        routerLink="/categorias"
+        class="btn btn-secondary"
+      >
+        Administrar categorías
+      </a>
+
+    </div>
+
+  </section>
+
+</section>

@@ -1,0 +1,25 @@
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# Backend
+backend/.venv/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.sqlite3
+backend/.env
+*.pyc
+
+# General
+.env
+.vscode/
+.idea/
+.DS_Store
+
+# Archivos de prueba
+entrada_nova.png
+
+# Archivos generados
+frontend/out-tsc/
+backend/staticfiles/
