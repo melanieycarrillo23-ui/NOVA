@@ -1,258 +1,284 @@
 <section class="dashboard">
 
-  <header class="dashboard-welcome">
-    <div>
-      <h1 class="page-title">
-        Bienvenido,
-        {{ auth.usuario()?.nombre_completo }}
-      </h1>
+  <section
+    class="usuario-home"
+    *ngIf="esSoloUsuario()"
+  >
 
-      <p class="page-subtitle">
-        Encuentra tus próximos eventos
-        y consulta tu actividad en NOVA.
-      </p>
-    </div>
-
-    <a
-      routerLink="/eventos"
-      class="btn btn-primary"
-    >
-      Explorar eventos
-    </a>
-  </header>
-
-
-  <!-- RESUMEN -->
-
-  <section class="summary-grid">
-
-    <a
-      routerLink="/eventos"
-      class="card summary-card"
-    >
-      <span class="summary-value">
-        {{ proximosEventos().length }}
-      </span>
-
-      <span class="summary-label">
-        Próximos eventos
-      </span>
-
-      <span class="summary-description">
-        Eventos disponibles próximamente
-      </span>
-    </a>
-
-
-    <a
-      routerLink="/mis-inscripciones"
-      class="card summary-card"
-    >
-      <span class="summary-value">
-        {{ inscripciones().length }}
-      </span>
-
-      <span class="summary-label">
-        Mis inscripciones
-      </span>
-
-      <span class="summary-description">
-        Eventos en los que estás registrado
-      </span>
-    </a>
-
-
-    <a
-      routerLink="/mis-entradas"
-      class="card summary-card"
-    >
-      <span class="summary-value">
-        {{ historial() }}
-      </span>
-
-      <span class="summary-label">
-        Historial
-      </span>
-
-      <span class="summary-description">
-        Entradas utilizadas o canceladas
-      </span>
-    </a>
-
-  </section>
-
-
-  <!-- CONTENIDO DEL USUARIO -->
-
-  <section class="dashboard-main">
-
-    <article class="card">
-
-      <div class="card-header">
-
-        <div>
-          <h3>Próximos eventos</h3>
-
-          <p class="secondary">
-            Eventos que se realizarán próximamente.
-          </p>
-        </div>
-
-        <a
-          routerLink="/eventos"
-          class="chip"
-        >
-          Ver todos
-        </a>
-
-      </div>
-
-
-      <div class="event-list">
-
-        <a
-          *ngFor="
-            let evento of
-            proximosEventos().slice(0, 4)
-          "
-          [routerLink]="[
-            '/eventos',
-            evento.id
-          ]"
-          class="event-card"
-        >
-
-          <div class="event-top">
-
-            <strong>
-              {{ evento.nombre }}
-            </strong>
-
-            <span class="badge">
-              {{ evento.estado }}
-            </span>
-
-          </div>
-
-          <div class="event-meta">
-
-            <span>
-              {{
-                evento.fecha_hora_inicio
-                  | date:'mediumDate'
-              }}
-            </span>
-
-            <span>
-              {{
-                evento.lugar_nombre ||
-                evento.modalidad
-              }}
-            </span>
-
-          </div>
-
-        </a>
-
-
-        <div
-          class="empty"
-          *ngIf="!proximosEventos().length"
-        >
-          No hay próximos eventos disponibles.
-        </div>
-
-      </div>
-
-    </article>
-
-
-    <article class="card activity-card">
+    <header class="dashboard-welcome">
 
       <div>
-        <h3>Mi actividad</h3>
+        <h1 class="page-title">
+          Bienvenido,
+          {{ auth.usuario()?.nombre_completo }}
+        </h1>
 
-        <p class="secondary">
-          Resumen de tu participación en NOVA.
+        <p class="page-subtitle">
+          Esto es lo más importante
+          para ti en este momento.
         </p>
       </div>
 
+    </header>
 
-      <div class="activity-list">
 
-        <a
-          routerLink="/mis-entradas"
-          class="activity-item"
+    <div class="usuario-home-grid">
+
+      <!-- PRÓXIMO EVENTO -->
+
+      <article class="card next-event-card">
+
+        <ng-container
+          *ngIf="
+            proximoEvento() as evento;
+            else sinProximoEvento
+          "
         >
-          <div>
-            <strong>
-              Entradas activas
-            </strong>
 
-            <span>
-              QR disponibles para tus eventos
+          <div class="next-event-header">
+
+            <div>
+              <span class="section-kicker">
+                TU PRÓXIMO EVENTO
+              </span>
+
+              <h2 class="next-event-title">
+                {{ evento.nombre }}
+              </h2>
+
+              <p class="next-event-description">
+                {{
+                  evento.descripcion_corta ||
+                  'Tu próximo evento en NOVA.'
+                }}
+              </p>
+            </div>
+
+            <span class="time-badge">
+              {{ tiempoParaProximoEvento() }}
             </span>
+
           </div>
 
-          <span class="activity-value">
-            {{ entradasActivas() }}
-          </span>
-        </a>
+
+          <div class="event-details">
+
+            <div class="event-detail">
+
+              <span class="detail-label">
+                Fecha
+              </span>
+
+              <strong>
+                {{
+                  formatearFechaHora(
+                    evento.fecha_hora_inicio
+                  )
+                }}
+              </strong>
+
+            </div>
 
 
-        <a
-          routerLink="/mis-inscripciones"
-          class="activity-item"
-        >
-          <div>
-            <strong>
-              Inscripciones
-            </strong>
+            <div class="event-detail">
 
-            <span>
-              Eventos en los que estás inscrito
-            </span>
+              <span class="detail-label">
+                Lugar
+              </span>
+
+              <strong>
+                {{
+                  evento.lugar_nombre ||
+                  evento.modalidad
+                }}
+              </strong>
+
+            </div>
+
           </div>
 
-          <span class="activity-value">
-            {{ inscripciones().length }}
-          </span>
-        </a>
+
+          <div class="status-grid">
+
+            <div class="status-item">
+
+              <span>
+                Inscripción
+              </span>
+
+              <strong class="status-success">
+                {{
+                  inscripcionProxima()?.estado ||
+                  'Sin confirmar'
+                }}
+              </strong>
+
+            </div>
 
 
-        <div class="activity-item">
+            <div class="status-item">
 
-          <div>
-            <strong>
-              Asistencias registradas
-            </strong>
+              <span>
+                Entrada
+              </span>
 
-            <span>
-              Entradas que ya fueron utilizadas
-            </span>
+              <strong
+                [class.status-success]="
+                  entradaProxima()?.estado === 'ACTIVA'
+                "
+              >
+                {{
+                  entradaProxima()?.estado ||
+                  'No disponible'
+                }}
+              </strong>
+
+            </div>
+
           </div>
 
-          <span class="activity-value">
-            {{ entradasUtilizadas() }}
-          </span>
+
+          <div class="next-event-actions">
+
+            <a
+              [routerLink]="[
+                '/eventos',
+                evento.id
+              ]"
+              [queryParams]="{
+                origen: 'inicio'
+              }"
+              class="btn btn-secondary"
+            >
+              Ver detalles
+            </a>
+
+            <a
+              *ngIf="
+                entradaProxima()?.estado === 'ACTIVA'
+              "
+              routerLink="/mis-entradas"
+              class="btn btn-primary"
+            >
+              Ver entrada QR
+            </a>
+
+          </div>
+
+        </ng-container>
+
+
+        <ng-template #sinProximoEvento>
+
+          <div class="empty-next-event">
+
+            <span class="section-kicker">
+              TU PRÓXIMO EVENTO
+            </span>
+
+            <h2>
+              No tienes eventos próximos
+            </h2>
+
+            <p class="secondary">
+              Cuando te inscribas en un evento,
+              aparecerá aquí la información
+              que necesitas.
+            </p>
+
+            <a
+              routerLink="/eventos"
+              class="btn btn-primary"
+            >
+              Explorar eventos
+            </a>
+
+          </div>
+
+        </ng-template>
+
+      </article>
+
+
+      <!-- ACTIVIDAD RECIENTE -->
+
+      <article class="card activity-card">
+
+        <div class="activity-header">
+
+          <div>
+            <span class="section-kicker">
+              TU CUENTA
+            </span>
+
+            <h3>
+              Actividad reciente
+            </h3>
+          </div>
 
         </div>
 
-      </div>
+
+        <div
+          class="activity-list"
+          *ngIf="
+            actividadReciente().length;
+            else sinActividad
+          "
+        >
+
+          <div
+            class="activity-item"
+            *ngFor="
+              let actividad of
+              actividadReciente()
+            "
+          >
+
+            <div class="activity-marker"></div>
+
+            <div class="activity-content">
+
+              <strong>
+                {{ actividad.titulo }}
+              </strong>
+
+              <span>
+                {{ actividad.detalle }}
+              </span>
+
+              <small>
+                {{
+                  formatearFechaCorta(
+                    actividad.fecha
+                  )
+                }}
+              </small>
+
+            </div>
+
+          </div>
+
+        </div>
 
 
-      <a
-        routerLink="/mis-entradas"
-        class="activity-link"
-      >
-        Consultar mis entradas
-      </a>
+        <ng-template #sinActividad>
 
-    </article>
+          <div class="empty activity-empty">
+            Todavía no hay actividad
+            registrada en tu cuenta.
+          </div>
+
+        </ng-template>
+
+      </article>
+
+    </div>
 
   </section>
 
 
+  <!-- ORGANIZACIÓN -->
   <!-- ORGANIZACIÓN -->
 
   <section

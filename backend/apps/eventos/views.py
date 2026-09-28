@@ -880,18 +880,35 @@ class EscanearQRView(APIView):
             EscaneoEntrada.objects.create(evento=evento, entrada=entrada, escaneado_por=request.user, hash_token_escaneado=token_hash, resultado=EscaneoEntrada.Resultado.INVALIDO, informacion_dispositivo=dispositivo)
             return Response({'resultado': 'INVALIDO'}, status=400)
 
+        ahora = timezone.now()
+        detalle = None
+
         if entrada.inscripcion.evento_id != evento.id:
             resultado = EscaneoEntrada.Resultado.EVENTO_INCORRECTO
             http_status = 400
+
+        elif ahora < evento.fecha_hora_inicio:
+            resultado = EscaneoEntrada.Resultado.INVALIDO
+            http_status = 400
+            detalle = 'La validación de entradas aún no está habilitada para este evento.'
+
+        elif ahora > evento.fecha_hora_fin:
+            resultado = EscaneoEntrada.Resultado.EXPIRADO
+            http_status = 400
+            detalle = 'El evento ya finalizó.'
+
         elif entrada.estado == Entrada.Estado.UTILIZADA:
             resultado = EscaneoEntrada.Resultado.YA_UTILIZADO
             http_status = 409
+
         elif entrada.estado == Entrada.Estado.CANCELADA:
             resultado = EscaneoEntrada.Resultado.CANCELADO
             http_status = 400
+
         elif entrada.estado == Entrada.Estado.EXPIRADA:
             resultado = EscaneoEntrada.Resultado.EXPIRADO
             http_status = 400
+
         else:
             resultado = EscaneoEntrada.Resultado.VALIDO
             http_status = 200
@@ -911,11 +928,19 @@ class EscanearQRView(APIView):
                 defaults={'escaneo_valido': escaneo, 'registrado_por': request.user}
             )
 
-        return Response({
+        respuesta = {
             'resultado': resultado,
             'entrada': EntradaSerializer(entrada).data,
             'participante': entrada.inscripcion.usuario.nombre_completo,
-        }, status=http_status)
+        }
+
+        if detalle:
+            respuesta['detail'] = detalle
+
+        return Response(
+            respuesta,
+            status=http_status
+        )
 
 
 class ReporteEventoView(APIView):

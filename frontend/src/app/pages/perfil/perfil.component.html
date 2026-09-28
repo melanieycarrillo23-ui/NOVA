@@ -1,0 +1,243 @@
+<section class="profile-page">
+
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Mi cuenta
+      </h1>
+
+      <p class="page-subtitle">
+        Consulta y actualiza la información
+        de tu perfil en NOVA.
+      </p>
+    </div>
+
+  </header>
+
+
+  <div
+    class="notice"
+    *ngIf="mensaje()"
+  >
+    {{ mensaje() }}
+  </div>
+
+
+  <div
+    class="error"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <div class="profile-layout">
+
+    <!-- PERFIL -->
+
+    <aside class="card profile-summary">
+
+      <div class="avatar">
+
+        <img
+          *ngIf="
+            urlImagenPerfil.trim() &&
+            !imagenError()
+          "
+          [src]="urlImagenPerfil"
+          [alt]="nombreCompleto"
+          (error)="imagenError.set(true)"
+        >
+
+        <span
+          *ngIf="
+            !urlImagenPerfil.trim() ||
+            imagenError()
+          "
+        >
+          {{ iniciales() }}
+        </span>
+
+      </div>
+
+
+      <div class="profile-identity">
+
+        <h2>
+          {{ nombreCompleto || 'Usuario' }}
+        </h2>
+
+        <p>
+          {{ auth.usuario()?.correo }}
+        </p>
+
+      </div>
+
+
+      <div class="account-data">
+
+        <div class="account-item">
+
+          <span>
+            Estado de la cuenta
+          </span>
+
+          <strong class="account-status">
+            {{ auth.usuario()?.estado }}
+          </strong>
+
+        </div>
+
+
+        <div class="account-item">
+
+          <span>
+            Roles
+          </span>
+
+          <div class="roles-list">
+
+            <span
+              class="role-badge"
+              *ngFor="
+                let rol of auth.usuario()?.roles
+              "
+            >
+              {{ rol }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </aside>
+
+
+    <!-- INFORMACIÓN PERSONAL -->
+
+    <article class="card profile-form">
+
+      <div class="form-header">
+
+        <h2>
+          Información personal
+        </h2>
+
+        <p>
+          Mantén actualizados tus datos
+          personales.
+        </p>
+
+      </div>
+
+
+      <div class="form-content">
+
+        <div class="field">
+
+          <label for="nombre">
+            Nombre completo
+          </label>
+
+          <input
+            id="nombre"
+            type="text"
+            [(ngModel)]="nombreCompleto"
+            autocomplete="name"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="correo">
+            Correo electrónico
+          </label>
+
+          <input
+            id="correo"
+            type="email"
+            [value]="
+              auth.usuario()?.correo || ''
+            "
+            disabled
+          >
+
+          <small>
+            El correo de la cuenta no puede
+            modificarse desde aquí.
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="telefono">
+            Teléfono
+          </label>
+
+          <input
+            id="telefono"
+            type="tel"
+            [(ngModel)]="telefono"
+            placeholder="Número de teléfono"
+            autocomplete="tel"
+          >
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="imagen">
+            Imagen de perfil
+          </label>
+
+          <input
+            id="imagen"
+            type="url"
+            [(ngModel)]="urlImagenPerfil"
+            (ngModelChange)="actualizarImagen()"
+            placeholder="https://..."
+          >
+
+          <small>
+            Puedes usar la dirección web de
+            una imagen.
+          </small>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="
+              guardando() ||
+              !nombreCompleto.trim()
+            "
+            (click)="guardar()"
+          >
+            {{
+              guardando()
+                ? 'Guardando...'
+                : 'Guardar cambios'
+            }}
+          </button>
+
+        </div>
+
+      </div>
+
+    </article>
+
+  </div>
+
+</section>

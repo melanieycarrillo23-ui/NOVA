@@ -1,0 +1,181 @@
+<section class="explore-page">
+
+  <header class="explore-header">
+
+    <div class="title-area">
+
+      <div>
+        <h1 class="page-title">
+          Explorar eventos
+        </h1>
+
+        <p class="page-subtitle">
+          Encuentra experiencias disponibles en NOVA.
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="search-box">
+
+      <input
+        type="search"
+        [ngModel]="busqueda()"
+        (ngModelChange)="actualizarBusqueda($event)"
+        placeholder="Buscar por nombre, categoría o lugar"
+        aria-label="Buscar eventos"
+      >
+
+    </div>
+
+  </header>
+
+
+  <div
+    class="results-info"
+    *ngIf="!cargando() && !error()"
+  >
+    <span>
+      {{
+        filtrados().length === 1
+          ? '1 evento encontrado'
+          : filtrados().length + ' eventos encontrados'
+      }}
+    </span>
+  </div>
+
+
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando eventos...
+  </div>
+
+
+  <div
+    class="empty error-message"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <div
+    class="events-grid"
+    *ngIf="
+      !cargando() &&
+      !error() &&
+      filtrados().length
+    "
+  >
+
+    <a
+      class="card event-card"
+        *ngFor="let evento of filtrados()"
+        [routerLink]="[
+            '/eventos',
+            evento.id
+        ]"
+        [queryParams]="{
+            origen: 'eventos'
+        }"
+    >
+
+      <div class="event-card-top">
+
+        <span class="badge">
+          {{
+            evento.categoria_nombre ||
+            'Evento'
+          }}
+        </span>
+
+        <span class="event-modality">
+          {{ evento.modalidad }}
+        </span>
+
+      </div>
+
+
+      <div class="event-content">
+
+        <h3>
+          {{ evento.nombre }}
+        </h3>
+
+        <p class="event-description">
+          {{
+            evento.descripcion_corta ||
+            'Consulta los detalles de este evento.'
+          }}
+        </p>
+
+      </div>
+
+
+      <div class="event-information">
+
+        <div class="event-data">
+
+          <span class="data-label">
+            Fecha
+          </span>
+
+          <strong>
+            {{
+              formatearFecha(
+                evento.fecha_hora_inicio
+              )
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="event-data">
+
+          <span class="data-label">
+            Lugar
+          </span>
+
+          <strong>
+            {{
+              evento.lugar_nombre ||
+              evento.modalidad
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="event-footer">
+        <span>
+          Ver evento
+        </span>
+
+        <span aria-hidden="true">
+          →
+        </span>
+      </div>
+
+    </a>
+
+  </div>
+
+
+  <div
+    class="empty"
+    *ngIf="
+      !cargando() &&
+      !error() &&
+      !filtrados().length
+    "
+  >
+    No encontramos eventos con ese criterio.
+  </div>
+
+</section>

@@ -1,0 +1,202 @@
+.explore-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+/* CABECERA */
+
+.explore-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+}
+
+.title-area {
+  display: flex;
+  align-items: flex-start;
+
+  gap: 14px;
+}
+
+
+/* BÚSQUEDA */
+
+.search-box {
+  width: min(360px, 100%);
+}
+
+.search-box input {
+  width: 100%;
+}
+
+
+/* RESULTADOS */
+
+.results-info {
+  margin-top: -8px;
+
+  color: var(--muted);
+
+  font-size: 0.78rem;
+}
+
+.events-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(
+      3,
+      minmax(0, 1fr)
+    );
+
+  gap: 18px;
+}
+
+
+/* TARJETA */
+
+.event-card {
+  min-height: 290px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.event-card:hover {
+  transform:
+    translateY(-3px);
+
+  border-color:
+    rgba(124, 58, 237, 0.45);
+
+  background:
+    rgba(255, 255, 255, 0.025);
+}
+
+.event-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+}
+
+.event-modality {
+  color: var(--muted);
+
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.event-content {
+  flex: 1;
+}
+
+.event-content h3 {
+  margin: 0;
+
+  font-size: 1.1rem;
+}
+
+.event-description {
+  margin: 9px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+
+/* INFORMACIÓN */
+
+.event-information {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+.event-data {
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.data-label {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+}
+
+.event-data strong {
+  font-size: 0.8rem;
+}
+
+
+/* PIE */
+
+.event-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding-top: 14px;
+
+  border-top: 1px solid var(--border);
+
+  color: #67e8f9;
+
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+
+/* MENSAJES */
+
+.error-message {
+  color: #fca5a5;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+
+  .events-grid {
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0, 1fr)
+      );
+  }
+}
+
+@media (max-width: 750px) {
+
+  .explore-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+}

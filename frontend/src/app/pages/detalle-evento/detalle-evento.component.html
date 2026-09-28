@@ -1,0 +1,225 @@
+<section class="event-detail-page">
+
+  <button
+    type="button"
+    class="back-link"
+    (click)="volver()"
+  >
+    <span aria-hidden="true">
+      ←
+    </span>
+
+    Volver
+  </button>
+
+
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando evento...
+  </div>
+
+
+  <div
+    class="empty error-message"
+    *ngIf="errorCarga()"
+  >
+    {{ errorCarga() }}
+  </div>
+
+  <ng-container *ngIf="evento() as evento">
+
+    <header class="event-header">
+
+      <div>
+
+        <span class="badge">
+          {{
+            evento.categoria_nombre ||
+            'Evento'
+          }}
+        </span>
+
+        <h1 class="page-title">
+          {{ evento.nombre }}
+        </h1>
+
+        <p class="page-subtitle">
+          {{
+            evento.descripcion_corta ||
+            'Consulta toda la información de este evento.'
+          }}
+        </p>
+
+      </div>
+
+    </header>
+
+
+    <div class="event-layout">
+
+      <!-- INFORMACIÓN -->
+
+      <article class="card information-card">
+
+        <h2>
+          Información
+        </h2>
+
+        <p
+          class="event-description"
+          *ngIf="evento.descripcion"
+        >
+          {{ evento.descripcion }}
+        </p>
+
+
+        <div class="information-list">
+
+          <div class="information-item">
+
+            <span class="information-label">
+              Inicio
+            </span>
+
+            <strong>
+              {{
+                formatearFecha(
+                  evento.fecha_hora_inicio
+                )
+              }}
+            </strong>
+
+          </div>
+
+
+          <div class="information-item">
+
+            <span class="information-label">
+              Lugar / modalidad
+            </span>
+
+            <strong>
+              {{
+                evento.lugar_nombre ||
+                evento.modalidad
+              }}
+            </strong>
+
+          </div>
+
+
+          <div class="information-item">
+
+            <span class="information-label">
+              Capacidad
+            </span>
+
+            <strong>
+              {{
+                evento.capacidad ||
+                'Sin límite indicado'
+              }}
+            </strong>
+
+          </div>
+
+        </div>
+
+      </article>
+
+
+      <!-- ENTRADAS -->
+
+      <article class="card tickets-card">
+
+        <div class="tickets-header">
+
+          <div>
+            <h2>
+              Entradas
+            </h2>
+
+            <p class="secondary">
+              Selecciona el tipo de entrada
+              con el que deseas inscribirte.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="tickets-list">
+
+          <div
+            class="ticket-item"
+            *ngFor="let tipo of tipos()"
+          >
+
+            <div class="ticket-information">
+
+              <strong>
+                {{ tipo.nombre }}
+              </strong>
+
+              <span>
+                {{
+                  formatearPrecio(
+                    tipo.precio
+                  )
+                }}
+              </span>
+
+              <small
+                *ngIf="tipo.descripcion"
+              >
+                {{ tipo.descripcion }}
+              </small>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="inscribirme(tipo.id)"
+            >
+              Inscribirme
+            </button>
+
+          </div>
+
+
+          <div
+            class="empty"
+            *ngIf="!tipos().length"
+          >
+            No hay tipos de entrada disponibles.
+          </div>
+
+        </div>
+
+
+        <div
+          class="notice"
+          *ngIf="mensaje()"
+        >
+          {{ mensaje() }}
+        </div>
+
+
+        <div
+          class="error"
+          *ngIf="error()"
+        >
+          {{ error() }}
+        </div>
+
+      </article>
+
+    </div>
+
+  </ng-container>
+
+</section>

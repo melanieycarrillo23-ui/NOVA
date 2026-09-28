@@ -1,0 +1,257 @@
+<section class="tickets-page">
+
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Mis entradas
+      </h1>
+
+      <p class="page-subtitle">
+        Consulta tus entradas y códigos QR
+        de acceso a los eventos.
+      </p>
+    </div>
+
+  </header>
+
+
+  <div
+    class="error"
+    *ngIf="errorGeneral()"
+  >
+    {{ errorGeneral() }}
+  </div>
+
+
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando entradas...
+  </div>
+
+
+  <div
+    class="tickets-grid"
+    *ngIf="
+      !cargando() &&
+      entradasOrdenadas().length
+    "
+  >
+
+    <article
+      class="card ticket-card"
+      *ngFor="let entrada of entradasOrdenadas()"
+      [class.ticket-inactive]="
+        entrada.estado !== 'ACTIVA'
+      "
+    >
+
+      <div class="ticket-header">
+
+        <span class="ticket-type">
+          {{ entrada.tipo_entrada_nombre }}
+        </span>
+
+        <span
+          class="ticket-status"
+          [ngClass]="
+            claseEstado(entrada.estado)
+          "
+        >
+          {{ textoEstado(entrada.estado) }}
+        </span>
+
+      </div>
+
+
+      <div class="ticket-main">
+
+        <h2>
+          {{ entrada.evento_nombre }}
+        </h2>
+
+        <p>
+          Entrada emitida el
+          <strong>
+            {{
+              formatearFecha(
+                entrada.emitida_en
+              )
+            }}
+          </strong>
+        </p>
+
+      </div>
+
+
+      <!-- ENTRADA ACTIVA -->
+
+      <div
+        class="active-ticket"
+        *ngIf="
+          entrada.estado === 'ACTIVA'
+        "
+      >
+
+        <div class="access-message">
+
+          <strong>
+            Tu entrada está lista
+          </strong>
+
+          <span>
+            Muestra el código QR al personal
+            encargado cuando llegues al evento.
+          </span>
+
+        </div>
+
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          *ngIf="
+            !qrUrls[entrada.id]
+          "
+          [disabled]="
+            cargandoId() === entrada.id
+          "
+          (click)="cargarQr(entrada.id)"
+        >
+          {{
+            cargandoId() === entrada.id
+              ? 'Cargando QR...'
+              : 'Mostrar código QR'
+          }}
+        </button>
+
+
+        <div
+          class="qr-container"
+          *ngIf="
+            qrUrls[entrada.id]
+          "
+        >
+
+          <div class="qr-box">
+
+            <img
+              [src]="qrUrls[entrada.id]"
+              alt="Código QR de entrada"
+            >
+
+          </div>
+
+          <span>
+            Presenta este código para ingresar.
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <!-- UTILIZADA -->
+
+      <div
+        class="ticket-message used-message"
+        *ngIf="
+          entrada.estado === 'UTILIZADA'
+        "
+      >
+
+        <strong>
+          Entrada utilizada
+        </strong>
+
+        <span>
+          Esta entrada ya fue validada
+          para el ingreso al evento.
+        </span>
+
+      </div>
+
+
+      <!-- CANCELADA -->
+
+      <div
+        class="ticket-message cancelled-message"
+        *ngIf="
+          entrada.estado === 'CANCELADA'
+        "
+      >
+
+        <strong>
+          Entrada cancelada
+        </strong>
+
+        <span>
+          Esta entrada ya no puede utilizarse
+          para ingresar al evento.
+        </span>
+
+      </div>
+
+
+      <div
+        class="error qr-error"
+        *ngIf="
+          erroresQr[entrada.id]
+        "
+      >
+        {{ erroresQr[entrada.id] }}
+      </div>
+
+
+      <footer class="ticket-footer">
+
+        <a
+          [routerLink]="[
+            '/eventos',
+            entrada.evento_id
+          ]"
+          class="event-link"
+        >
+          Ver evento
+          <span aria-hidden="true">
+            →
+          </span>
+        </a>
+
+      </footer>
+
+    </article>
+
+  </div>
+
+
+  <div
+    class="empty empty-tickets"
+    *ngIf="
+      !cargando() &&
+      !entradasOrdenadas().length &&
+      !errorGeneral()
+    "
+  >
+
+    <h3>
+      Aún no tienes entradas
+    </h3>
+
+    <p>
+      Cuando te inscribas en un evento,
+      tu entrada aparecerá aquí.
+    </p>
+
+    <a
+      routerLink="/eventos"
+      class="btn btn-primary"
+    >
+      Explorar eventos
+    </a>
+
+  </div>
+
+</section>

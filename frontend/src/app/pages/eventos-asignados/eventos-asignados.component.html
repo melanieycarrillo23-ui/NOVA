@@ -1,0 +1,173 @@
+<section class="assigned-events-page">
+
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Eventos asignados
+      </h1>
+
+      <p class="page-subtitle">
+        Consulta los eventos en los que tienes
+        funciones operativas.
+      </p>
+    </div>
+
+  </header>
+
+
+  <div
+    class="error"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando eventos asignados...
+  </div>
+
+
+  <div
+    class="events-grid"
+    *ngIf="
+      !cargando() &&
+      items().length
+    "
+  >
+
+    <article
+      class="card assigned-event-card"
+      *ngFor="let evento of items()"
+    >
+
+      <div class="event-card-header">
+
+        <span class="team-badge">
+          EQUIPO
+        </span>
+
+        <span class="event-status">
+          {{ evento.estado }}
+        </span>
+
+      </div>
+
+
+      <div class="event-content">
+
+        <h2>
+          {{ evento.nombre }}
+        </h2>
+
+        <p *ngIf="evento.descripcion_corta">
+          {{ evento.descripcion_corta }}
+        </p>
+
+      </div>
+
+
+      <div class="event-information">
+
+        <div class="event-data">
+
+          <span>
+            Fecha
+          </span>
+
+          <strong>
+            {{
+              formatearFecha(
+                evento.fecha_hora_inicio
+              )
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="event-data">
+
+          <span>
+            Lugar
+          </span>
+
+          <strong>
+            {{
+              evento.lugar_nombre ||
+              textoModalidad(evento.modalidad)
+            }}
+          </strong>
+
+        </div>
+
+
+        <div class="event-data">
+
+          <span>
+            Modalidad
+          </span>
+
+          <strong>
+            {{ textoModalidad(evento.modalidad) }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <footer class="event-actions">
+
+        <a
+          class="btn btn-primary"
+          routerLink="/validar-qr"
+          [queryParams]="{
+            evento: evento.id
+          }"
+        >
+          Validar entradas
+        </a>
+
+        <a
+          class="btn btn-secondary"
+          routerLink="/asistentes"
+          [queryParams]="{
+            evento: evento.id
+          }"
+        >
+          Ver asistentes
+        </a>
+
+      </footer>
+
+    </article>
+
+  </div>
+
+
+  <div
+    class="empty empty-events"
+    *ngIf="
+      !cargando() &&
+      !items().length &&
+      !error()
+    "
+  >
+
+    <h3>
+      No tienes eventos asignados
+    </h3>
+
+    <p>
+      Cuando seas agregado al equipo de un evento,
+      aparecerá aquí.
+    </p>
+
+  </div>
+
+</section>

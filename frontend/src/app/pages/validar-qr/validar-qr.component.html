@@ -1,0 +1,290 @@
+<section class="validation-page">
+    <button
+        type="button"
+        class="back-link"
+        (click)="volver()"
+    >
+        <span aria-hidden="true">
+            ←
+        </span>
+
+        Volver
+    </button>
+
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Validar entrada QR
+      </h1>
+
+      <p class="page-subtitle">
+        Valida una entrada y registra
+        la asistencia del participante.
+      </p>
+    </div>
+
+  </header>
+
+
+  <div
+    class="error"
+    *ngIf="errorEventos()"
+  >
+    {{ errorEventos() }}
+  </div>
+
+
+  <div class="validation-layout">
+
+    <!-- VALIDACIÓN -->
+
+    <article class="card validation-card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>
+            Validar entrada
+          </h2>
+
+          <p>
+            Selecciona el evento y pega
+            el contenido leído del código QR.
+          </p>
+        </div>
+
+      </div>
+
+
+      <form
+        class="validation-form"
+        [formGroup]="form"
+        (ngSubmit)="validar()"
+      >
+
+        <div class="field">
+
+          <label for="evento">
+            Evento
+          </label>
+
+          <select
+            id="evento"
+            formControlName="evento_id"
+            [disabled]="cargandoEventos()"
+          >
+
+            <option [ngValue]="0">
+              {{
+                cargandoEventos()
+                  ? 'Cargando eventos...'
+                  : 'Selecciona un evento'
+              }}
+            </option>
+
+            <option
+              *ngFor="
+                let evento of eventos()
+              "
+              [ngValue]="evento.id"
+            >
+              {{ evento.nombre }}
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="token">
+            Contenido del QR
+          </label>
+
+          <textarea
+            id="token"
+            rows="7"
+            formControlName="token_qr"
+            placeholder="Pega aquí el contenido leído del código QR"
+            autocomplete="off"
+          ></textarea>
+
+          <small>
+            El contenido se obtiene al leer
+            el código QR de la entrada.
+          </small>
+
+        </div>
+
+
+        <div class="form-actions">
+
+          <button
+            type="button"
+            class="btn btn-ghost"
+            [disabled]="
+              procesando() ||
+              !form.controls.token_qr.value
+            "
+            (click)="limpiar()"
+          >
+            Limpiar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="
+              form.invalid ||
+              procesando() ||
+              cargandoEventos()
+            "
+          >
+            {{
+              procesando()
+                ? 'Validando...'
+                : 'Validar entrada'
+            }}
+          </button>
+
+        </div>
+
+      </form>
+
+    </article>
+
+
+    <!-- RESULTADO -->
+
+    <article class="card result-card">
+
+      <div class="card-header">
+
+        <div>
+          <h2>
+            Resultado
+          </h2>
+
+          <p>
+            Aquí aparecerá el resultado
+            de la validación.
+          </p>
+        </div>
+
+      </div>
+
+
+      <ng-container
+        *ngIf="
+          resultado() as resultado;
+          else esperando
+        "
+      >
+
+        <!-- VÁLIDA -->
+
+        <div
+          class="validation-result result-valid"
+          *ngIf="esValido()"
+        >
+
+          <div class="result-symbol">
+            ✓
+          </div>
+
+          <div class="result-information">
+
+            <strong>
+              {{
+                tituloResultado(
+                  resultado.resultado
+                )
+              }}
+            </strong>
+
+            <span>
+              Asistencia registrada
+              correctamente.
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <!-- NO VÁLIDA -->
+
+        <div
+          class="validation-result result-invalid"
+          *ngIf="!esValido()"
+        >
+
+          <div class="result-symbol">
+            !
+          </div>
+
+          <div class="result-information">
+
+            <strong>
+              {{
+                tituloResultado(
+                  resultado.resultado
+                )
+              }}
+            </strong>
+
+            <span *ngIf="resultado.detail">
+              {{ resultado.detail }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="participant-data"
+          *ngIf="resultado.participante"
+        >
+
+          <span>
+            Participante
+          </span>
+
+          <strong>
+            {{ resultado.participante }}
+          </strong>
+
+        </div>
+
+      </ng-container>
+
+
+      <ng-template #esperando>
+
+        <div class="waiting-result">
+
+          <div class="waiting-symbol">
+            QR
+          </div>
+
+          <strong>
+            Esperando una validación
+          </strong>
+
+          <p>
+            Selecciona un evento e introduce
+            el contenido de una entrada QR.
+          </p>
+
+        </div>
+
+      </ng-template>
+
+    </article>
+
+  </div>
+
+</section>

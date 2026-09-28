@@ -16,160 +16,25 @@ import { AuthService } from '../../services/auth.service';
     CommonModule,
     FormsModule
   ],
-  template: `
-    <h1 class="page-title">
-      Mi perfil
-    </h1>
-
-    <p class="page-subtitle">
-      Consulta y actualiza la información de tu cuenta.
-    </p>
-
-    <div
-      class="notice"
-      *ngIf="mensaje()"
-      style="margin-bottom: 16px"
-    >
-      {{ mensaje() }}
-    </div>
-
-    <div
-      class="error"
-      *ngIf="error()"
-      style="margin-bottom: 16px"
-    >
-      {{ error() }}
-    </div>
-
-    <div class="grid grid-2">
-
-      <div class="card">
-
-        <h3>
-          Información personal
-        </h3>
-
-        <div
-          class="stack"
-          style="margin-top: 16px"
-        >
-
-          <div class="field">
-            <label>Nombre completo</label>
-
-            <input
-              [(ngModel)]="nombreCompleto"
-            >
-          </div>
-
-          <div class="field">
-            <label>Correo</label>
-
-            <input
-              [value]="auth.usuario()?.correo || ''"
-              disabled
-            >
-          </div>
-
-          <div class="field">
-            <label>Teléfono</label>
-
-            <input
-              [(ngModel)]="telefono"
-              placeholder="Número de teléfono"
-            >
-          </div>
-
-          <div class="field">
-            <label>URL de imagen de perfil</label>
-
-            <input
-              [(ngModel)]="urlImagenPerfil"
-              placeholder="https://..."
-            >
-          </div>
-
-          <button
-            class="btn btn-primary"
-            [disabled]="guardando() || !nombreCompleto.trim()"
-            (click)="guardar()"
-          >
-            {{
-              guardando()
-                ? 'Guardando...'
-                : 'Guardar cambios'
-            }}
-          </button>
-
-        </div>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          Cuenta y roles
-        </h3>
-
-        <div
-          class="stack"
-          style="margin-top: 16px"
-        >
-
-          <div>
-            <span class="muted">
-              Estado
-            </span>
-
-            <div>
-              <span class="badge green">
-                {{ auth.usuario()?.estado }}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <span class="muted">
-              Roles globales
-            </span>
-
-            <div
-              class="row wrap"
-              style="margin-top: 8px"
-            >
-              <span
-                class="badge"
-                *ngFor="let rol of auth.usuario()?.roles"
-              >
-                {{ rol }}
-              </span>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  `
+  templateUrl: './perfil.component.html',
+  styleUrl: './perfil.component.css'
 })
 export class PerfilComponent implements OnInit {
 
-  auth = inject(AuthService);
+  readonly auth = inject(AuthService);
 
   nombreCompleto = '';
   telefono = '';
   urlImagenPerfil = '';
 
   guardando = signal(false);
+  imagenError = signal(false);
 
   mensaje = signal('');
   error = signal('');
 
   ngOnInit(): void {
-
-    const usuario =
-      this.auth.usuario();
+    const usuario = this.auth.usuario();
 
     if (!usuario) {
       return;
@@ -188,6 +53,9 @@ export class PerfilComponent implements OnInit {
   guardar(): void {
 
     if (!this.nombreCompleto.trim()) {
+      this.error.set(
+        'El nombre completo es obligatorio.'
+      );
       return;
     }
 
@@ -219,12 +87,33 @@ export class PerfilComponent implements OnInit {
 
         this.error.set(
           respuesta?.error?.detail ||
-          JSON.stringify(respuesta?.error) ||
           'No fue posible actualizar el perfil.'
         );
 
         this.guardando.set(false);
       }
     });
+  }
+
+  iniciales(): string {
+
+    const nombre =
+      this.nombreCompleto.trim();
+
+    if (!nombre) {
+      return 'U';
+    }
+
+    return nombre
+      .split(/\s+/)
+      .slice(0, 2)
+      .map(parte =>
+        parte.charAt(0).toUpperCase()
+      )
+      .join('');
+  }
+
+  actualizarImagen(): void {
+    this.imagenError.set(false);
   }
 }

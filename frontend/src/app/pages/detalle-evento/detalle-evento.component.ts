@@ -1,10 +1,159 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Evento, TipoEntrada } from '../../models/models';
+import { CommonModule, Location } from '@angular/common';
+import {
+  Component,
+  inject,
+  OnInit,
+  signal
+} from '@angular/core';
+import {
+  ActivatedRoute
+} from '@angular/router';
+import { forkJoin } from 'rxjs';
+
+import {
+  Evento,
+  TipoEntrada
+} from '../../models/models';
+
 import { EventosService } from '../../services/eventos.service';
-@Component({selector:'app-detalle-evento',standalone:true,imports:[CommonModule],template:`
-<div *ngIf="evento() as e"><div class="row between wrap"><div><span class="badge">{{e.categoria_nombre || 'Evento'}}</span><h1 class="page-title" style="margin-top:10px">{{e.nombre}}</h1><p class="page-subtitle">{{e.descripcion_corta}}</p></div><span class="badge green">{{e.estado}}</span></div>
-<div class="grid grid-2"><div class="card"><h3>Información</h3><p class="secondary" style="margin-top:14px">{{e.descripcion}}</p><div class="stack"><div><strong>Inicio</strong><div class="muted">{{e.fecha_hora_inicio | date:'full'}}</div></div><div><strong>Lugar / modalidad</strong><div class="muted">{{e.lugar_nombre || e.modalidad}}</div></div><div><strong>Capacidad</strong><div class="muted">{{e.capacidad || 'Sin límite indicado'}}</div></div></div></div>
-<div class="card"><h3>Entradas</h3><div class="stack" style="margin-top:14px"><div class="row between" *ngFor="let t of tipos()"><div><strong>{{t.nombre}}</strong><div class="muted">{{t.precio | currency:'COP':'symbol-narrow':'1.0-0'}}</div></div><button class="btn btn-primary" (click)="inscribirme(t.id)">Inscribirme</button></div><div class="empty" *ngIf="!tipos().length">No hay tipos de entrada disponibles.</div><div class="notice" *ngIf="mensaje()">{{mensaje()}}</div><div class="error" *ngIf="error()">{{error()}}</div></div></div></div></div>`})
-export class DetalleEventoComponent implements OnInit{api=inject(EventosService);route=inject(ActivatedRoute);router=inject(Router);evento=signal<Evento|null>(null);tipos=signal<TipoEntrada[]>([]);mensaje=signal('');error=signal('');ngOnInit(){const id=Number(this.route.snapshot.paramMap.get('id'));this.api.verEvento(id).subscribe(e=>this.evento.set(e));this.api.tiposEntrada(id).subscribe(r=>this.tipos.set(r.results.filter(t=>t.evento===id)))}inscribirme(tipoId:number){const e=this.evento();if(!e)return;this.mensaje.set('');this.error.set('');this.api.inscribirse(e.id,tipoId).subscribe({next:()=>this.mensaje.set('Inscripción confirmada. Tu entrada ya está disponible en Mis entradas.'),error:x=>this.error.set(x?.error?.detail||'No fue posible completar la inscripción.')})}}
+
+@Component({
+  selector: 'app-detalle-evento',
+  standalone: true,
+  imports: [
+    CommonModule
+  ],
+  templateUrl: './detalle-evento.component.html',
+  styleUrl: './detalle-evento.component.css'
+})
+export class DetalleEventoComponent implements OnInit {
+
+  private readonly api = inject(EventosService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+
+  evento = signal<Evento | null>(null);
+  tipos = signal<TipoEntrada[]>([]);
+
+  cargando = signal(true);
+  errorCarga = signal('');
+
+  mensaje = signal('');
+  error = signal('');
+  
+
+  ngOnInit(): void {
+    const id = Number(
+      this.route.snapshot.paramMap.get('id')
+    );
+
+    if (!id) {
+      this.errorCarga.set(
+        'No fue posible identificar el evento.'
+      );
+      this.cargando.set(false);
+      return;
+    }
+
+    this.cargarEvento(id);
+  }
+
+  inscribirme(tipoId: number): void {
+    const evento = this.evento();
+
+    if (!evento) {
+      return;
+    }
+
+    this.mensaje.set('');
+    this.error.set('');
+
+    this.api.inscribirse(
+      evento.id,
+      tipoId
+    ).subscribe({
+      next: () => {
+        this.mensaje.set(
+          'Inscripción confirmada. Tu entrada ya está disponible en Mis entradas.'
+        );
+      },
+      error: respuesta => {
+        this.error.set(
+          respuesta?.error?.detail ||
+          'No fue posible completar la inscripción.'
+        );
+      }
+    });
+  }
+
+  formatearFecha(fecha: string): string {
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }
+    ).format(new Date(fecha));
+  }
+
+  formatearPrecio(
+    precio: string | number
+  ): string {
+
+    const valor = Number(precio);
+
+    if (valor === 0) {
+      return 'Gratis';
+    }
+
+    return new Intl.NumberFormat(
+      'es-CO',
+      {
+        style: 'currency',
+        currency: 'COP',
+        maximumFractionDigits: 0
+      }
+    ).format(valor);
+  }
+
+  volver(): void {
+    this.location.back();
+  }
+
+  private cargarEvento(id: number): void {
+    this.cargando.set(true);
+    this.errorCarga.set('');
+
+    forkJoin({
+      evento: this.api.verEvento(id),
+      tipos: this.api.tiposEntrada(id)
+    }).subscribe({
+      next: respuesta => {
+
+        this.evento.set(
+          respuesta.evento
+        );
+
+        this.tipos.set(
+          respuesta.tipos.results.filter(
+            tipo =>
+              tipo.evento === id &&
+              tipo.estado === 'ACTIVO'
+          )
+        );
+
+        this.cargando.set(false);
+      },
+      error: () => {
+        this.errorCarga.set(
+          'No fue posible cargar la información del evento.'
+        );
+
+        this.cargando.set(false);
+      }
+    });
+  }
+}

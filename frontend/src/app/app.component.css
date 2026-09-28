@@ -128,14 +128,71 @@
   overflow-y: auto;
 }
 
-.nav-section {
-  padding: 16px 12px 6px;
+.nav-section-toggle {
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 10px;
+
+  margin-top: 8px;
+  padding: 14px 12px 7px;
+
+  border: 0;
+
+  background: transparent;
 
   color: #59657e;
 
+  font-family: inherit;
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.14em;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease;
+}
+
+.nav-section-toggle:hover {
+  color: var(--secondary);
+}
+
+
+/* FLECHA */
+
+.section-chevron {
+  display: inline-block;
+
+  font-size: 1rem;
+  line-height: 1;
+
+  transform: rotate(0deg);
+
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+.section-chevron.open {
+  transform: rotate(90deg);
+
+  color: #67e8f9;
+}
+
+
+/* ELEMENTOS DEL GRUPO */
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+
+  margin-bottom: 4px;
 }
 
 .nav-item {

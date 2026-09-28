@@ -1,0 +1,158 @@
+<section class="registrations-page">
+
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Mis inscripciones
+      </h1>
+
+      <p class="page-subtitle">
+        Consulta y administra los eventos
+        en los que estás inscrito.
+      </p>
+    </div>
+
+  </header>
+
+
+  <div
+    class="notice"
+    *ngIf="mensaje()"
+  >
+    {{ mensaje() }}
+  </div>
+
+
+  <div
+    class="error"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando inscripciones...
+  </div>
+
+
+  <div
+    class="card registrations-card"
+    *ngIf="
+      !cargando() &&
+      items().length
+    "
+  >
+
+    <div
+      class="registration-item"
+      *ngFor="let inscripcion of items()"
+    >
+
+      <div class="registration-info">
+
+        <div class="registration-main">
+
+          <strong class="event-name">
+            {{ inscripcion.evento_nombre }}
+          </strong>
+
+          <span
+            class="registration-status"
+            [ngClass]="claseEstado(inscripcion.estado)"
+          >
+            {{ inscripcion.estado }}
+          </span>
+
+        </div>
+
+
+        <div class="registration-date">
+
+          <span>
+            Inscrito el
+          </span>
+
+          <strong>
+            {{
+              formatearFecha(
+                inscripcion.inscrito_en
+              )
+            }}
+          </strong>
+
+        </div>
+
+      </div>
+
+
+      <div class="registration-actions">
+
+        <a
+          [routerLink]="[
+            '/eventos',
+            inscripcion.evento
+          ]"
+          class="btn btn-secondary"
+        >
+          Ver evento
+        </a>
+
+
+        <button
+          type="button"
+          class="btn btn-ghost"
+          *ngIf="
+            inscripcion.estado === 'CONFIRMADA'
+          "
+          [disabled]="
+            procesandoId() === inscripcion.id
+          "
+          (click)="cancelar(inscripcion)"
+        >
+          {{
+            procesandoId() === inscripcion.id
+              ? 'Cancelando...'
+              : 'Cancelar inscripción'
+          }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="empty empty-registrations"
+    *ngIf="
+      !cargando() &&
+      !items().length &&
+      !error()
+    "
+  >
+
+    <h3>
+      Todavía no tienes inscripciones
+    </h3>
+
+    <p>
+      Cuando te inscribas en un evento,
+      aparecerá aquí.
+    </p>
+
+    <a
+      routerLink="/eventos"
+      class="btn btn-primary"
+    >
+      Explorar eventos
+    </a>
+
+  </div>
+
+</section>

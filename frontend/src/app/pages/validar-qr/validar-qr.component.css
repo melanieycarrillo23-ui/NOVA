@@ -1,0 +1,360 @@
+.validation-page {
+  display: flex;
+  flex-direction: column;
+
+  gap: 22px;
+}
+
+
+
+/* ENCABEZADO */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.back-link {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+
+/* DISTRIBUCIÓN */
+
+.validation-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(320px, 0.85fr);
+
+  gap: 18px;
+
+  align-items: start;
+}
+
+
+/* TARJETAS */
+
+.validation-card,
+.result-card {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 390px;
+}
+
+.card-header {
+  padding-bottom: 18px;
+
+  border-bottom:
+    1px solid var(--border);
+}
+
+.card-header h2 {
+  margin: 0;
+
+  font-size: 1.05rem;
+}
+
+.card-header p {
+  margin: 7px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.77rem;
+  line-height: 1.5;
+}
+
+
+/* FORMULARIO */
+
+.validation-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 20px;
+
+  padding-top: 20px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.field label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.field small {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.field textarea {
+  min-height: 150px;
+
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  gap: 9px;
+}
+
+
+/* RESULTADO */
+
+.validation-result {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  margin-top: 22px;
+  padding: 18px;
+
+  border-radius: 14px;
+}
+
+.result-symbol {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 50%;
+
+  font-size: 1.05rem;
+  font-weight: 900;
+}
+
+.result-information {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+}
+
+.result-information strong {
+  font-size: 0.9rem;
+}
+
+.result-information span {
+  color: var(--muted);
+
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+
+/* RESULTADO VÁLIDO */
+
+.result-valid {
+  background:
+    rgba(34, 211, 238, 0.07);
+
+  border:
+    1px solid rgba(
+      34,
+      211,
+      238,
+      0.18
+    );
+}
+
+.result-valid .result-symbol {
+  color: #67e8f9;
+
+  background:
+    rgba(34, 211, 238, 0.13);
+
+  border:
+    1px solid rgba(
+      34,
+      211,
+      238,
+      0.25
+    );
+}
+
+
+/* RESULTADO INVÁLIDO */
+
+.result-invalid {
+  background:
+    rgba(248, 113, 113, 0.06);
+
+  border:
+    1px solid rgba(
+      248,
+      113,
+      113,
+      0.16
+    );
+}
+
+.result-invalid .result-symbol {
+  color: #fca5a5;
+
+  background:
+    rgba(248, 113, 113, 0.1);
+
+  border:
+    1px solid rgba(
+      248,
+      113,
+      113,
+      0.2
+    );
+}
+
+
+/* PARTICIPANTE */
+
+.participant-data {
+  display: flex;
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-top: 18px;
+  padding: 16px 0;
+
+  border-top:
+    1px solid var(--border);
+}
+
+.participant-data span {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+}
+
+.participant-data strong {
+  font-size: 0.86rem;
+}
+
+
+/* ESPERANDO */
+
+.waiting-result {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 10px;
+
+  min-height: 260px;
+
+  text-align: center;
+}
+
+.waiting-symbol {
+  width: 58px;
+  height: 58px;
+
+  display: grid;
+  place-items: center;
+
+  margin-bottom: 4px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 16px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.waiting-result strong {
+  font-size: 0.88rem;
+}
+
+.waiting-result p {
+  max-width: 270px;
+
+  margin: 0;
+
+  color: var(--muted);
+
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .validation-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .validation-card,
+  .result-card {
+    min-height: auto;
+  }
+}
+
+@media (max-width: 550px) {
+
+  .form-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}

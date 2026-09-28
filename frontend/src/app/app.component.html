@@ -50,45 +50,103 @@
 
       <nav class="nav">
 
-        <div
-          class="nav-section"
-          *ngIf="!esSoloUsuario()"
-        >
-          GENERAL
-        </div>
+        <!-- ENLACES GENERALES REUTILIZABLES -->
 
-        <a
-          routerLink="/dashboard"
-          routerLinkActive="active"
-          class="nav-item"
-        >
-          Inicio
-        </a>
+        <ng-template #generalLinks>
 
-        <a
-          routerLink="/eventos"
-          routerLinkActive="active"
-          class="nav-item"
-        >
-          Explorar eventos
-        </a>
+          <a
+            routerLink="/dashboard"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Inicio
+          </a>
 
-        <a
-          routerLink="/mis-inscripciones"
-          routerLinkActive="active"
-          class="nav-item"
-        >
-          Mis inscripciones
-        </a>
+          <a
+            routerLink="/eventos"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Explorar eventos
+          </a>
 
-        <a
-          routerLink="/mis-entradas"
-          routerLinkActive="active"
-          class="nav-item"
-        >
-          Mis entradas
-        </a>
+          <a
+            routerLink="/mis-inscripciones"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Mis inscripciones
+          </a>
 
+          <a
+            routerLink="/mis-entradas"
+            routerLinkActive="active"
+            class="nav-item"
+          >
+            Mis entradas
+          </a>
+
+        </ng-template>
+
+
+        <!-- SOLO USUARIO -->
+
+        <ng-container *ngIf="esSoloUsuario()">
+
+          <ng-container
+            *ngTemplateOutlet="generalLinks"
+          ></ng-container>
+
+        </ng-container>
+
+
+        <!-- GENERAL -->
+
+        <ng-container *ngIf="!esSoloUsuario()">
+
+          <button
+            type="button"
+            class="nav-section-toggle"
+            [attr.aria-expanded]="
+              seccionAbierta() === 'general'
+            "
+            (click)="alternarSeccion('general')"
+          >
+
+            <span>
+              GENERAL
+            </span>
+
+            <span
+              class="section-chevron"
+              [class.open]="
+                seccionAbierta() === 'general'
+              "
+              aria-hidden="true"
+            >
+              ›
+            </span>
+
+          </button>
+
+
+          <div
+            class="nav-group"
+            *ngIf="
+              seccionAbierta() === 'general'
+            "
+          >
+
+            <ng-container
+              *ngTemplateOutlet="generalLinks"
+            ></ng-container>
+
+          </div>
+
+        </ng-container>
+
+
+        <!-- OPERACIÓN -->
 
         <ng-container
           *ngIf="
@@ -100,36 +158,71 @@
           "
         >
 
-          <div class="nav-section">
-            OPERACIÓN
+          <button
+            type="button"
+            class="nav-section-toggle"
+            [attr.aria-expanded]="
+              seccionAbierta() === 'operacion'
+            "
+            (click)="
+              alternarSeccion('operacion')
+            "
+          >
+
+            <span>
+              OPERACIÓN
+            </span>
+
+            <span
+              class="section-chevron"
+              [class.open]="
+                seccionAbierta() === 'operacion'
+              "
+              aria-hidden="true"
+            >
+              ›
+            </span>
+
+          </button>
+
+
+          <div
+            class="nav-group"
+            *ngIf="
+              seccionAbierta() === 'operacion'
+            "
+          >
+
+            <a
+              routerLink="/eventos-asignados"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Eventos asignados
+            </a>
+
+            <a
+              routerLink="/validar-qr"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Validar QR
+            </a>
+
+            <a
+              routerLink="/asistentes"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Asistentes
+            </a>
+
           </div>
-
-          <a
-            routerLink="/eventos-asignados"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Eventos asignados
-          </a>
-
-          <a
-            routerLink="/validar-qr"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Validar QR
-          </a>
-
-          <a
-            routerLink="/asistentes"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Asistentes
-          </a>
 
         </ng-container>
 
+
+        <!-- ORGANIZACIÓN -->
 
         <ng-container
           *ngIf="
@@ -140,68 +233,143 @@
           "
         >
 
-          <div class="nav-section">
-            ORGANIZACIÓN
+          <button
+            type="button"
+            class="nav-section-toggle"
+            [attr.aria-expanded]="
+              seccionAbierta() === 'organizacion'
+            "
+            (click)="
+              alternarSeccion('organizacion')
+            "
+          >
+
+            <span>
+              ORGANIZACIÓN
+            </span>
+
+            <span
+              class="section-chevron"
+              [class.open]="
+                seccionAbierta() === 'organizacion'
+              "
+              aria-hidden="true"
+            >
+              ›
+            </span>
+
+          </button>
+
+
+          <div
+            class="nav-group"
+            *ngIf="
+              seccionAbierta() === 'organizacion'
+            "
+          >
+
+            <a
+              routerLink="/mis-eventos"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Mis eventos
+            </a>
+
+            <a
+              routerLink="/crear-evento"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Crear evento
+            </a>
+
+            <a
+              routerLink="/administrar-evento"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Administrar evento
+            </a>
+
+            <a
+              routerLink="/reportes"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Reportes
+            </a>
+
           </div>
-
-          <a
-            routerLink="/mis-eventos"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Mis eventos
-          </a>
-
-          <a
-            routerLink="/crear-evento"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Crear evento
-          </a>
-
-          <a
-            routerLink="/administrar-evento"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Administrar evento
-          </a>
-
-          <a
-            routerLink="/reportes"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Reportes
-          </a>
 
         </ng-container>
 
 
+        <!-- ADMINISTRACIÓN -->
+
         <ng-container
-          *ngIf="auth.tieneRol('ADMIN')"
+          *ngIf="
+            auth.tieneRol('ADMIN')
+          "
         >
 
-          <div class="nav-section">
-            ADMINISTRACIÓN
+          <button
+            type="button"
+            class="nav-section-toggle"
+            [attr.aria-expanded]="
+              seccionAbierta() ===
+              'administracion'
+            "
+            (click)="
+              alternarSeccion(
+                'administracion'
+              )
+            "
+          >
+
+            <span>
+              ADMINISTRACIÓN
+            </span>
+
+            <span
+              class="section-chevron"
+              [class.open]="
+                seccionAbierta() ===
+                'administracion'
+              "
+              aria-hidden="true"
+            >
+              ›
+            </span>
+
+          </button>
+
+
+          <div
+            class="nav-group"
+            *ngIf="
+              seccionAbierta() ===
+              'administracion'
+            "
+          >
+
+            <a
+              routerLink="/usuarios"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Usuarios
+            </a>
+
+            <a
+              routerLink="/categorias"
+              routerLinkActive="active"
+              class="nav-item"
+            >
+              Categorías
+            </a>
+
           </div>
-
-          <a
-            routerLink="/usuarios"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Usuarios
-          </a>
-
-          <a
-            routerLink="/categorias"
-            routerLinkActive="active"
-            class="nav-item"
-          >
-            Categorías
-          </a>
 
         </ng-container>
 

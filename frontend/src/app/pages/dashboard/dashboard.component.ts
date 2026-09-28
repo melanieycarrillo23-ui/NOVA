@@ -17,6 +17,12 @@ import {
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
 
+interface ActividadReciente {
+  titulo: string;
+  detalle: string;
+  fecha: string;
+}
+
 @Component({
   selector: 'app-dashboard',
   standalone: true,
@@ -39,12 +45,32 @@ export class DashboardComponent implements OnInit {
   misEventos = signal<Evento[]>([]);
   asignados = signal<Evento[]>([]);
 
-  proximosEventos = computed(() => {
+  esSoloUsuario = computed(() => {
+    const roles = this.auth.usuario()?.roles ?? [];
+
+    return (
+      roles.length === 1 &&
+      roles.includes('USUARIO')
+    );
+  });
+
+  proximoEvento = computed<Evento | null>(() => {
     const ahora = Date.now();
 
-    return this.eventos()
+    const eventosInscritos = this.inscripciones()
       .filter(
-        evento =>
+        inscripcion =>
+          inscripcion.estado === 'CONFIRMADA'
+      )
+      .map(inscripcion =>
+        this.eventos().find(
+          evento =>
+            evento.id === inscripcion.evento
+        )
+      )
+      .filter(
+        (evento): evento is Evento =>
+          evento !== undefined &&
           new Date(
             evento.fecha_hora_inicio
           ).getTime() >= ahora
@@ -58,39 +84,153 @@ export class DashboardComponent implements OnInit {
             b.fecha_hora_inicio
           ).getTime()
       );
+
+    return eventosInscritos[0] ?? null;
   });
 
-  entradasActivas = computed(
-    () =>
-      this.entradas().filter(
+  inscripcionProxima = computed<Inscripcion | null>(() => {
+    const evento = this.proximoEvento();
+
+    if (!evento) {
+      return null;
+    }
+
+    return (
+      this.inscripciones().find(
+        inscripcion =>
+          inscripcion.evento === evento.id
+      ) ?? null
+    );
+  });
+
+  entradaProxima = computed<Entrada | null>(() => {
+    const evento = this.proximoEvento();
+
+    if (!evento) {
+      return null;
+    }
+
+    const entradasEvento = this.entradas()
+      .filter(
+        entrada =>
+          entrada.evento_id === evento.id
+      );
+
+    return (
+      entradasEvento.find(
         entrada =>
           entrada.estado === 'ACTIVA'
-      ).length
-  );
+      ) ??
+      entradasEvento[0] ??
+      null
+    );
+  });
 
-  entradasUtilizadas = computed(
-    () =>
-      this.entradas().filter(
-        entrada =>
-          entrada.estado === 'UTILIZADA'
-      ).length
-  );
+  actividadReciente = computed<ActividadReciente[]>(() => {
 
-  historial = computed(
-    () =>
-      this.entradas().filter(
-        entrada =>
-          entrada.estado === 'UTILIZADA' ||
-          entrada.estado === 'CANCELADA'
-      ).length
-  );
+    const inscripciones: ActividadReciente[] =
+      this.inscripciones()
+        .filter(
+          inscripcion =>
+            inscripcion.estado === 'CONFIRMADA'
+        )
+        .map(inscripcion => ({
+          titulo: 'Inscripción confirmada',
+          detalle: inscripcion.evento_nombre,
+          fecha: inscripcion.inscrito_en
+        }));
+
+    const entradasEmitidas: ActividadReciente[] =
+      this.entradas()
+        .map(entrada => ({
+          titulo: 'Entrada generada',
+          detalle: entrada.evento_nombre,
+          fecha: entrada.emitida_en
+        }));
+
+    const entradasUtilizadas: ActividadReciente[] =
+      this.entradas()
+        .filter(
+          entrada =>
+            Boolean(entrada.utilizada_en)
+        )
+        .map(entrada => ({
+          titulo: 'Entrada utilizada',
+          detalle: entrada.evento_nombre,
+          fecha: entrada.utilizada_en as string
+        }));
+
+    return [
+      ...inscripciones,
+      ...entradasEmitidas,
+      ...entradasUtilizadas
+    ]
+      .sort(
+        (a, b) =>
+          new Date(b.fecha).getTime() -
+          new Date(a.fecha).getTime()
+      )
+      .slice(0, 5);
+  });
+
+  tiempoParaProximoEvento = computed(() => {
+    const evento = this.proximoEvento();
+
+    if (!evento) {
+      return '';
+    }
+
+    const diferencia =
+      new Date(
+        evento.fecha_hora_inicio
+      ).getTime() - Date.now();
+
+    const dias = Math.ceil(
+      diferencia / 86_400_000
+    );
+
+    if (dias <= 0) {
+      return 'Es hoy';
+    }
+
+    if (dias === 1) {
+      return 'Es mañana';
+    }
+
+    return `Faltan ${dias} días`;
+  });
 
   ngOnInit(): void {
     this.cargarDatosGenerales();
     this.cargarDatosPorRol();
   }
 
+  formatearFechaHora(fecha: string): string {
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }
+    ).format(new Date(fecha));
+  }
+
+  formatearFechaCorta(fecha: string): string {
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric'
+      }
+    ).format(new Date(fecha));
+  }
+
   private cargarDatosGenerales(): void {
+
     this.api.listarEventos().subscribe({
       next: respuesta => {
         this.eventos.set(respuesta.results);
@@ -120,6 +260,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private cargarDatosPorRol(): void {
+
     if (
       this.auth.tieneRol(
         'ORGANIZADOR',
@@ -141,6 +282,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private cargarEventosOrganizados(): void {
+
     this.api.misEventos().subscribe({
       next: respuesta => {
         this.misEventos.set(respuesta);
@@ -152,6 +294,7 @@ export class DashboardComponent implements OnInit {
   }
 
   private cargarEventosAsignados(): void {
+
     this.api.eventosAsignados().subscribe({
       next: respuesta => {
         this.asignados.set(respuesta);

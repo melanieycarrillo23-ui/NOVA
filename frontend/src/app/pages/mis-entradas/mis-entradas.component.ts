@@ -1,11 +1,13 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   inject,
   OnDestroy,
   OnInit,
   signal
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { Entrada } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
@@ -13,155 +15,47 @@ import { EventosService } from '../../services/eventos.service';
 @Component({
   selector: 'app-mis-entradas',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    <h1 class="page-title">Mis entradas</h1>
-
-    <p class="page-subtitle">
-      Consulta tus entradas y códigos QR de acceso.
-    </p>
-
-    <div
-      class="error"
-      *ngIf="errorGeneral()"
-      style="margin-bottom: 16px"
-    >
-      {{ errorGeneral() }}
-    </div>
-
-    <div class="grid grid-2">
-
-      <div
-        class="card"
-        *ngFor="let entrada of items()"
-      >
-
-        <div class="row between wrap">
-
-          <div>
-            <span class="badge">
-              {{ entrada.tipo_entrada_nombre }}
-            </span>
-
-            <h3 style="margin-top: 10px">
-              {{ entrada.evento_nombre }}
-            </h3>
-          </div>
-
-          <span
-            class="badge"
-            [class.green]="entrada.estado === 'ACTIVA'"
-          >
-            {{ entrada.estado }}
-          </span>
-
-        </div>
-
-        <p class="muted">
-          Código: {{ entrada.codigo_publico }}
-        </p>
-
-        <!-- ENTRADA ACTIVA -->
-        <ng-container *ngIf="entrada.estado === 'ACTIVA'">
-
-          <button
-            class="btn btn-primary"
-            [disabled]="cargandoId() === entrada.id"
-            (click)="cargarQr(entrada.id)"
-          >
-            {{
-              cargandoId() === entrada.id
-                ? 'Cargando QR...'
-                : qrUrls[entrada.id]
-                  ? 'QR cargado'
-                  : 'Mostrar QR'
-            }}
-          </button>
-
-          <div
-            class="qr-box"
-            style="margin-top: 14px"
-            *ngIf="qrUrls[entrada.id]"
-          >
-            <img
-              [src]="qrUrls[entrada.id]"
-              alt="Código QR de entrada"
-            >
-          </div>
-
-        </ng-container>
-
-        <!-- ENTRADA UTILIZADA -->
-        <div
-          class="notice"
-          style="margin-top: 14px"
-          *ngIf="entrada.estado === 'UTILIZADA'"
-        >
-          Esta entrada ya fue utilizada para ingresar al evento.
-        </div>
-
-        <!-- ENTRADA CANCELADA -->
-        <div
-          class="error"
-          style="margin-top: 14px"
-          *ngIf="entrada.estado === 'CANCELADA'"
-        >
-          Esta entrada fue cancelada y ya no puede utilizarse.
-        </div>
-
-        <div
-          class="error"
-          style="margin-top: 14px"
-          *ngIf="erroresQr[entrada.id]"
-        >
-          {{ erroresQr[entrada.id] }}
-        </div>
-
-      </div>
-
-    </div>
-
-    <div
-      class="empty"
-      *ngIf="!items().length && !errorGeneral()"
-    >
-      Aún no tienes entradas emitidas.
-    </div>
-  `
+  imports: [
+    CommonModule,
+    RouterLink
+  ],
+  templateUrl: './mis-entradas.component.html',
+  styleUrl: './mis-entradas.component.css'
 })
 export class MisEntradasComponent implements OnInit, OnDestroy {
 
-  api = inject(EventosService);
+  private readonly api = inject(EventosService);
 
   items = signal<Entrada[]>([]);
 
+  cargando = signal(true);
   cargandoId = signal<number | null>(null);
 
   errorGeneral = signal('');
 
   qrUrls: Record<number, string> = {};
-
   erroresQr: Record<number, string> = {};
+
+  entradasOrdenadas = computed(() => {
+    return [...this.items()].sort((a, b) => {
+
+      const prioridad =
+        this.prioridadEstado(a.estado) -
+        this.prioridadEstado(b.estado);
+
+      if (prioridad !== 0) {
+        return prioridad;
+      }
+
+      return (
+        new Date(b.emitida_en).getTime() -
+        new Date(a.emitida_en).getTime()
+      );
+    });
+  });
 
   ngOnInit(): void {
     this.cargarEntradas();
-  }
-
-  cargarEntradas(): void {
-
-    this.errorGeneral.set('');
-
-    this.api.misEntradas().subscribe({
-      next: respuesta => {
-        this.items.set(respuesta);
-      },
-
-      error: () => {
-        this.errorGeneral.set(
-          'No fue posible cargar tus entradas.'
-        );
-      }
-    });
   }
 
   cargarQr(id: number): void {
@@ -176,7 +70,8 @@ export class MisEntradasComponent implements OnInit, OnDestroy {
     this.api.qrBlob(id).subscribe({
       next: blob => {
 
-        this.qrUrls[id] = URL.createObjectURL(blob);
+        this.qrUrls[id] =
+          URL.createObjectURL(blob);
 
         this.cargandoId.set(null);
       },
@@ -192,11 +87,105 @@ export class MisEntradasComponent implements OnInit, OnDestroy {
     });
   }
 
+  formatearFecha(fecha: string): string {
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }
+    ).format(new Date(fecha));
+  }
+
+  claseEstado(estado: string): string {
+
+    switch (estado) {
+
+      case 'ACTIVA':
+        return 'status-active';
+
+      case 'UTILIZADA':
+        return 'status-used';
+
+      case 'CANCELADA':
+        return 'status-cancelled';
+
+      default:
+        return 'status-neutral';
+    }
+  }
+
+  textoEstado(estado: string): string {
+
+    switch (estado) {
+
+      case 'ACTIVA':
+        return 'ACTIVA';
+
+      case 'UTILIZADA':
+        return 'UTILIZADA';
+
+      case 'CANCELADA':
+        return 'CANCELADA';
+
+      default:
+        return estado;
+    }
+  }
+
   ngOnDestroy(): void {
 
-    Object.values(this.qrUrls).forEach(url => {
+    Object.values(
+      this.qrUrls
+    ).forEach(url => {
       URL.revokeObjectURL(url);
     });
+  }
 
+  private cargarEntradas(): void {
+
+    this.cargando.set(true);
+    this.errorGeneral.set('');
+
+    this.api.misEntradas().subscribe({
+      next: respuesta => {
+
+        this.items.set(respuesta);
+
+        this.cargando.set(false);
+      },
+
+      error: () => {
+
+        this.items.set([]);
+
+        this.errorGeneral.set(
+          'No fue posible cargar tus entradas.'
+        );
+
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  private prioridadEstado(
+    estado: string
+  ): number {
+
+    switch (estado) {
+
+      case 'ACTIVA':
+        return 1;
+
+      case 'UTILIZADA':
+        return 2;
+
+      case 'CANCELADA':
+        return 3;
+
+      default:
+        return 4;
+    }
   }
 }

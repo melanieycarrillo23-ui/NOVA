@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import {
   Component,
   inject,
@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
+
 import {
   catchError,
   forkJoin,
@@ -28,204 +29,45 @@ import { EventosService } from '../../services/eventos.service';
     CommonModule,
     FormsModule
   ],
-  template: `
-    <h1 class="page-title">
-      Asistentes
-    </h1>
-
-    <p class="page-subtitle">
-      Consulta los participantes inscritos en los eventos
-      que tienes autorizado gestionar.
-    </p>
-
-    <div
-      class="card"
-      style="margin-bottom: 18px"
-    >
-      <div class="row wrap">
-
-        <div
-          class="field"
-          style="flex: 1; min-width: 240px"
-        >
-          <label>Evento</label>
-
-          <select [(ngModel)]="eventoId">
-            <option [ngValue]="null">
-              Selecciona un evento
-            </option>
-
-            <option
-              *ngFor="let evento of eventos()"
-              [ngValue]="evento.id"
-            >
-              {{ evento.nombre }}
-            </option>
-          </select>
-        </div>
-
-        <button
-          class="btn btn-primary"
-          style="align-self: end"
-          [disabled]="!eventoId || cargando()"
-          (click)="buscar()"
-        >
-          {{
-            cargando()
-              ? 'Consultando...'
-              : 'Consultar asistentes'
-          }}
-        </button>
-
-      </div>
-    </div>
-
-    <div
-      class="error"
-      *ngIf="error()"
-      style="margin-bottom: 16px"
-    >
-      {{ error() }}
-    </div>
-
-    <div class="card table-wrap">
-
-      <table
-        class="table"
-        *ngIf="items().length"
-      >
-        <thead>
-          <tr>
-            <th>Participante</th>
-            <th>Estado</th>
-            <th>Fecha de inscripción</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr
-            *ngFor="let inscripcion of items()"
-          >
-            <td>
-              {{ inscripcion.usuario_nombre || 'Usuario' }}
-            </td>
-
-            <td>
-              <span class="badge">
-                {{ inscripcion.estado }}
-              </span>
-            </td>
-
-            <td>
-              {{ inscripcion.inscrito_en | date:'medium' }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <div
-        class="empty"
-        *ngIf="!items().length && !cargando()"
-      >
-        {{
-          eventoId
-            ? 'No hay asistentes para este evento.'
-            : 'Selecciona un evento para consultar sus asistentes.'
-        }}
-      </div>
-
-    </div>
-  `
+  templateUrl: './asistentes.component.html',
+  styleUrl: './asistentes.component.css'
 })
 export class AsistentesComponent implements OnInit {
 
-  api = inject(EventosService);
-  auth = inject(AuthService);
-  route = inject(ActivatedRoute);
+  private readonly api = inject(EventosService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
+
+  volver(): void {
+    this.location.back();
+  }
 
   eventos = signal<Evento[]>([]);
   items = signal<Inscripcion[]>([]);
 
   eventoId: number | null = null;
 
+  cargandoEventos = signal(true);
   cargando = signal(false);
+
   error = signal('');
+  errorEventos = signal('');
 
   ngOnInit(): void {
 
     this.cargarEventos();
 
     const id = Number(
-      this.route.snapshot.queryParamMap.get('evento')
+      this.route.snapshot.queryParamMap.get(
+        'evento'
+      )
     );
 
     if (id > 0) {
       this.eventoId = id;
-
       this.buscar();
     }
-  }
-
-  cargarEventos(): void {
-
-    if (this.auth.tieneRol('ADMIN')) {
-
-      this.api.listarEventos().subscribe({
-        next: respuesta => {
-          this.eventos.set(
-            respuesta.results
-          );
-        },
-
-        error: () => {
-          this.eventos.set([]);
-        }
-      });
-
-      return;
-    }
-
-    if (this.auth.tieneRol('ORGANIZADOR')) {
-
-      forkJoin({
-        propios:
-          this.api.misEventos().pipe(
-            catchError(() => of([]))
-          ),
-
-        asignados:
-          this.api.eventosAsignados().pipe(
-            catchError(() => of([]))
-          )
-      }).subscribe(resultado => {
-
-        const todos = [
-          ...resultado.propios,
-          ...resultado.asignados
-        ];
-
-        const unicos = todos.filter(
-          (evento, indice, arreglo) =>
-            arreglo.findIndex(
-              item => item.id === evento.id
-            ) === indice
-        );
-
-        this.eventos.set(unicos);
-      });
-
-      return;
-    }
-
-    this.api.eventosAsignados().subscribe({
-      next: respuesta => {
-        this.eventos.set(respuesta);
-      },
-
-      error: () => {
-        this.eventos.set([]);
-      }
-    });
   }
 
   buscar(): void {
@@ -245,7 +87,14 @@ export class AsistentesComponent implements OnInit {
       next: respuesta => {
 
         this.items.set(
-          respuesta
+          [...respuesta].sort(
+            (a, b) =>
+              (a.usuario_nombre || '')
+                .localeCompare(
+                  b.usuario_nombre || '',
+                  'es'
+                )
+          )
         );
 
         this.cargando.set(false);
@@ -261,5 +110,151 @@ export class AsistentesComponent implements OnInit {
         this.cargando.set(false);
       }
     });
+  }
+
+  formatearFecha(fecha: string): string {
+
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      }
+    ).format(new Date(fecha));
+  }
+
+  claseEstado(estado: string): string {
+
+    switch (estado) {
+
+      case 'CONFIRMADA':
+        return 'status-confirmed';
+
+      case 'CANCELADA':
+        return 'status-cancelled';
+
+      default:
+        return 'status-neutral';
+    }
+  }
+
+  private cargarEventos(): void {
+
+    this.cargandoEventos.set(true);
+    this.errorEventos.set('');
+
+    // ADMIN puede consultar cualquier evento.
+    if (this.auth.tieneRol('ADMIN')) {
+
+      this.api.listarEventos().subscribe({
+
+        next: respuesta => {
+          this.establecerEventos(
+            respuesta.results
+          );
+        },
+
+        error: () => {
+          this.errorAlCargarEventos();
+        }
+      });
+
+      return;
+    }
+
+    // ORGANIZADOR puede consultar eventos propios
+    // y aquellos donde también fue asignado.
+    if (
+      this.auth.tieneRol(
+        'ORGANIZADOR'
+      )
+    ) {
+
+      forkJoin({
+
+        propios:
+          this.api.misEventos().pipe(
+            catchError(() => of([]))
+          ),
+
+        asignados:
+          this.api
+            .eventosAsignados()
+            .pipe(
+              catchError(() => of([]))
+            )
+
+      }).subscribe(resultado => {
+
+        const todos = [
+          ...resultado.propios,
+          ...resultado.asignados
+        ];
+
+        const unicos =
+          todos.filter(
+            (
+              evento,
+              indice,
+              arreglo
+            ) =>
+              arreglo.findIndex(
+                item =>
+                  item.id === evento.id
+              ) === indice
+          );
+
+        this.establecerEventos(
+          unicos
+        );
+      });
+
+      return;
+    }
+
+    // STAFF.
+    this.api.eventosAsignados().subscribe({
+
+      next: respuesta => {
+        this.establecerEventos(
+          respuesta
+        );
+      },
+
+      error: () => {
+        this.errorAlCargarEventos();
+      }
+    });
+  }
+
+  private establecerEventos(
+    eventos: Evento[]
+  ): void {
+
+    const ordenados =
+      [...eventos].sort(
+        (a, b) =>
+          new Date(
+            a.fecha_hora_inicio
+          ).getTime() -
+          new Date(
+            b.fecha_hora_inicio
+          ).getTime()
+      );
+
+    this.eventos.set(ordenados);
+    this.cargandoEventos.set(false);
+  }
+
+  private errorAlCargarEventos(): void {
+
+    this.eventos.set([]);
+
+    this.errorEventos.set(
+      'No fue posible cargar los eventos disponibles.'
+    );
+
+    this.cargandoEventos.set(false);
   }
 }

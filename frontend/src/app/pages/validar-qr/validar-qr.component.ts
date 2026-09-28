@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+import { CommonModule, Location } from '@angular/common';
 import {
   Component,
   inject,
@@ -13,6 +13,7 @@ import {
 } from '@angular/forms';
 
 import { ActivatedRoute } from '@angular/router';
+
 import {
   catchError,
   forkJoin,
@@ -20,8 +21,20 @@ import {
 } from 'rxjs';
 
 import { Evento } from '../../models/models';
+
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
+
+
+interface ResultadoValidacion {
+  resultado?: string;
+  detail?: string;
+  participante?: string;
+  entrada?: {
+    codigo_publico?: string;
+  };
+}
+
 
 @Component({
   selector: 'app-validar-qr',
@@ -30,141 +43,33 @@ import { EventosService } from '../../services/eventos.service';
     CommonModule,
     ReactiveFormsModule
   ],
-  template: `
-    <h1 class="page-title">
-      Validar entrada QR
-    </h1>
-
-    <p class="page-subtitle">
-      Valida una entrada y registra automáticamente
-      la asistencia del participante.
-    </p>
-
-    <div class="grid grid-2">
-
-      <!-- FORMULARIO -->
-      <div class="card">
-
-        <form
-          [formGroup]="form"
-          (ngSubmit)="validar()"
-          class="stack"
-        >
-
-          <div class="field">
-            <label>Evento</label>
-
-            <select formControlName="evento_id">
-
-              <option [ngValue]="0">
-                Selecciona un evento
-              </option>
-
-              <option
-                *ngFor="let evento of eventos()"
-                [ngValue]="evento.id"
-              >
-                {{ evento.nombre }}
-              </option>
-
-            </select>
-          </div>
-
-          <div class="field">
-            <label>
-              Contenido del QR
-            </label>
-
-            <textarea
-              rows="8"
-              formControlName="token_qr"
-              placeholder="Pega aquí el contenido leído del código QR"
-            ></textarea>
-          </div>
-
-          <button
-            class="btn btn-primary"
-            [disabled]="form.invalid || procesando()"
-          >
-            {{
-              procesando()
-                ? 'Validando...'
-                : 'Validar entrada'
-            }}
-          </button>
-
-        </form>
-
-      </div>
-
-      <!-- RESULTADO -->
-      <div class="card">
-
-        <h3>
-          Resultado de validación
-        </h3>
-
-        <div
-          *ngIf="resultado() as r"
-          style="margin-top: 14px"
-        >
-
-          <div
-            class="notice"
-            *ngIf="r.resultado === 'VALIDO'"
-          >
-            Entrada válida. Asistencia registrada correctamente.
-          </div>
-
-          <div
-            class="error"
-            *ngIf="r.resultado !== 'VALIDO'"
-          >
-            Resultado:
-            {{ r.resultado || 'ERROR' }}
-          </div>
-
-          <p *ngIf="r.detail">
-            {{ r.detail }}
-          </p>
-
-          <p *ngIf="r.participante">
-            <strong>Participante:</strong>
-            {{ r.participante }}
-          </p>
-
-          <p *ngIf="r.entrada">
-            <strong>Código de entrada:</strong>
-            {{ r.entrada.codigo_publico }}
-          </p>
-
-        </div>
-
-        <div
-          class="empty"
-          *ngIf="!resultado()"
-        >
-          Esperando una validación.
-        </div>
-
-      </div>
-
-    </div>
-  `
+  templateUrl: './validar-qr.component.html',
+  styleUrl: './validar-qr.component.css'
 })
 export class ValidarQrComponent implements OnInit {
 
-  private fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(EventosService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly location = inject(Location);
 
-  api = inject(EventosService);
-  auth = inject(AuthService);
-  route = inject(ActivatedRoute);
+  volver(): void {
+    this.location.back();
+  }
 
   eventos = signal<Evento[]>([]);
-  resultado = signal<any>(null);
+
+  resultado =
+    signal<ResultadoValidacion | null>(null);
+
   procesando = signal(false);
+  cargandoEventos = signal(true);
+
+  errorEventos = signal('');
 
   form = this.fb.nonNullable.group({
+
     evento_id: [
       0,
       [
@@ -179,12 +84,15 @@ export class ValidarQrComponent implements OnInit {
     ]
   });
 
+
   ngOnInit(): void {
 
     this.cargarEventos();
 
     const eventoId = Number(
-      this.route.snapshot.queryParamMap.get('evento')
+      this.route.snapshot.queryParamMap.get(
+        'evento'
+      )
     );
 
     if (eventoId > 0) {
@@ -194,71 +102,6 @@ export class ValidarQrComponent implements OnInit {
     }
   }
 
-  cargarEventos(): void {
-
-    // ADMIN puede operar cualquier evento
-    if (this.auth.tieneRol('ADMIN')) {
-
-      this.api.listarEventos().subscribe({
-        next: respuesta => {
-          this.eventos.set(
-            respuesta.results
-          );
-        },
-
-        error: () => {
-          this.eventos.set([]);
-        }
-      });
-
-      return;
-    }
-
-    // ORGANIZADOR puede tener eventos propios
-    // y también eventos donde fue asignado
-    if (this.auth.tieneRol('ORGANIZADOR')) {
-
-      forkJoin({
-        propios:
-          this.api.misEventos().pipe(
-            catchError(() => of([]))
-          ),
-
-        asignados:
-          this.api.eventosAsignados().pipe(
-            catchError(() => of([]))
-          )
-      }).subscribe(resultado => {
-
-        const todos = [
-          ...resultado.propios,
-          ...resultado.asignados
-        ];
-
-        const unicos = todos.filter(
-          (evento, indice, arreglo) =>
-            arreglo.findIndex(
-              item => item.id === evento.id
-            ) === indice
-        );
-
-        this.eventos.set(unicos);
-      });
-
-      return;
-    }
-
-    // STAFF
-    this.api.eventosAsignados().subscribe({
-      next: respuesta => {
-        this.eventos.set(respuesta);
-      },
-
-      error: () => {
-        this.eventos.set([]);
-      }
-    });
-  }
 
   validar(): void {
 
@@ -288,7 +131,9 @@ export class ValidarQrComponent implements OnInit {
         if (
           respuesta?.resultado === 'VALIDO'
         ) {
-          this.form.controls.token_qr.reset('');
+          this.form.controls
+            .token_qr
+            .reset('');
         }
       },
 
@@ -305,5 +150,179 @@ export class ValidarQrComponent implements OnInit {
         this.procesando.set(false);
       }
     });
+  }
+
+
+  limpiar(): void {
+
+    this.form.controls.token_qr.reset('');
+
+    this.resultado.set(null);
+  }
+
+
+  esValido(): boolean {
+
+    return (
+      this.resultado()?.resultado ===
+      'VALIDO'
+    );
+  }
+
+
+  tituloResultado(
+    resultado?: string
+  ): string {
+
+    switch (resultado) {
+
+      case 'VALIDO':
+        return 'Entrada válida';
+
+      case 'YA_UTILIZADO':
+        return 'Entrada ya utilizada';
+
+      case 'CANCELADO':
+        return 'Entrada cancelada';
+
+      case 'EXPIRADO':
+        return 'Entrada expirada';
+
+      case 'EVENTO_INCORRECTO':
+        return 'Evento incorrecto';
+
+      case 'INVALIDO':
+        return 'Entrada no válida';
+
+      default:
+        return 'No fue posible validar la entrada';
+    }
+  }
+
+
+  private cargarEventos(): void {
+
+    this.cargandoEventos.set(true);
+    this.errorEventos.set('');
+
+    // ADMIN puede operar cualquier evento.
+    if (this.auth.tieneRol('ADMIN')) {
+
+      this.api.listarEventos().subscribe({
+
+        next: respuesta => {
+          this.establecerEventos(
+            respuesta.results
+          );
+        },
+
+        error: () => {
+          this.errorAlCargarEventos();
+        }
+      });
+
+      return;
+    }
+
+
+    // ORGANIZADOR puede operar eventos propios
+    // y eventos donde fue asignado.
+    if (
+      this.auth.tieneRol(
+        'ORGANIZADOR'
+      )
+    ) {
+
+      forkJoin({
+
+        propios:
+          this.api.misEventos().pipe(
+            catchError(() => of([]))
+          ),
+
+        asignados:
+          this.api
+            .eventosAsignados()
+            .pipe(
+              catchError(() => of([]))
+            )
+
+      }).subscribe(resultado => {
+
+        const todos = [
+          ...resultado.propios,
+          ...resultado.asignados
+        ];
+
+        const unicos =
+          todos.filter(
+            (
+              evento,
+              indice,
+              arreglo
+            ) =>
+              arreglo.findIndex(
+                item =>
+                  item.id === evento.id
+              ) === indice
+          );
+
+        this.establecerEventos(
+          unicos
+        );
+      });
+
+      return;
+    }
+
+
+    // STAFF.
+    this.api.eventosAsignados().subscribe({
+
+      next: respuesta => {
+        this.establecerEventos(
+          respuesta
+        );
+      },
+
+      error: () => {
+        this.errorAlCargarEventos();
+      }
+    });
+  }
+
+
+  private establecerEventos(
+    eventos: Evento[]
+  ): void {
+
+    const ordenados =
+      [...eventos].sort(
+        (a, b) =>
+          new Date(
+            a.fecha_hora_inicio
+          ).getTime() -
+          new Date(
+            b.fecha_hora_inicio
+          ).getTime()
+      );
+
+    this.eventos.set(
+      ordenados
+    );
+
+    this.cargandoEventos.set(false);
+  }
+
+
+  private errorAlCargarEventos(): void {
+
+    this.eventos.set([]);
+
+    this.errorEventos.set(
+      'No fue posible cargar los eventos disponibles.'
+    );
+
+    this.cargandoEventos.set(false);
   }
 }

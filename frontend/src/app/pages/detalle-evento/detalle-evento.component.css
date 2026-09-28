@@ -1,0 +1,199 @@
+.event-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+
+/* VOLVER */
+
+.back-link {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+
+/* ENCABEZADO */
+
+.event-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.event-header .page-title {
+  margin-top: 10px;
+}
+
+
+/* DISTRIBUCIÓN */
+
+.event-layout {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(340px, 1fr);
+
+  gap: 18px;
+  align-items: stretch;
+}
+
+
+/* INFORMACIÓN */
+
+.information-card,
+.tickets-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.information-card h2,
+.tickets-card h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.event-description {
+  margin: 18px 0 0;
+
+  color: var(--secondary);
+
+  line-height: 1.6;
+}
+
+.information-list {
+  display: flex;
+  flex-direction: column;
+
+  margin-top: 24px;
+}
+
+.information-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  padding: 15px 0;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.information-item:last-child {
+  border-bottom: 0;
+}
+
+.information-label {
+  color: var(--muted);
+
+  font-size: 0.72rem;
+}
+
+.information-item strong {
+  font-size: 0.88rem;
+}
+
+
+/* ENTRADAS */
+
+.tickets-header {
+  margin-bottom: 20px;
+}
+
+.tickets-header .secondary {
+  margin-top: 7px;
+}
+
+.tickets-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  padding: 16px 0;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.ticket-item:first-child {
+  padding-top: 0;
+}
+
+.ticket-information {
+  min-width: 0;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.ticket-information strong {
+  font-size: 0.95rem;
+}
+
+.ticket-information span {
+  color: #67e8f9;
+
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.ticket-information small {
+  color: var(--muted);
+
+  font-size: 0.74rem;
+}
+
+.notice,
+.error {
+  margin-top: 18px;
+}
+
+.error-message {
+  color: #fca5a5;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .event-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+
+  .ticket-item {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ticket-item .btn {
+    width: 100%;
+  }
+}
