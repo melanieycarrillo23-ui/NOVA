@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   Component,
   inject,
@@ -12,7 +12,10 @@ import {
   Validators
 } from '@angular/forms';
 
-import { ActivatedRoute } from '@angular/router';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 
 import {
   catchError,
@@ -30,6 +33,7 @@ interface ResultadoValidacion {
   resultado?: string;
   detail?: string;
   participante?: string;
+
   entrada?: {
     codigo_publico?: string;
   };
@@ -52,11 +56,7 @@ export class ValidarQrComponent implements OnInit {
   private readonly api = inject(EventosService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
-
-  volver(): void {
-    this.location.back();
-  }
+  private readonly router = inject(Router);
 
   eventos = signal<Evento[]>([]);
 
@@ -67,6 +67,10 @@ export class ValidarQrComponent implements OnInit {
   cargandoEventos = signal(true);
 
   errorEventos = signal('');
+
+  mostrarVolverEventosAsignados =
+    signal(false);
+
 
   form = this.fb.nonNullable.group({
 
@@ -87,19 +91,34 @@ export class ValidarQrComponent implements OnInit {
 
   ngOnInit(): void {
 
+    this.mostrarVolverEventosAsignados.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'eventos-asignados'
+    );
+
     this.cargarEventos();
 
     const eventoId = Number(
-      this.route.snapshot.queryParamMap.get(
-        'evento'
-      )
+      this.route.snapshot
+        .queryParamMap
+        .get('evento')
     );
 
     if (eventoId > 0) {
-      this.form.controls.evento_id.setValue(
-        eventoId
-      );
+
+      this.form.controls
+        .evento_id
+        .setValue(eventoId);
     }
+  }
+
+
+  volver(): void {
+
+    this.router.navigate([
+      '/eventos-asignados'
+    ]);
   }
 
 
@@ -131,6 +150,7 @@ export class ValidarQrComponent implements OnInit {
         if (
           respuesta?.resultado === 'VALIDO'
         ) {
+
           this.form.controls
             .token_qr
             .reset('');
@@ -155,7 +175,9 @@ export class ValidarQrComponent implements OnInit {
 
   limpiar(): void {
 
-    this.form.controls.token_qr.reset('');
+    this.form.controls
+      .token_qr
+      .reset('');
 
     this.resultado.set(null);
   }
@@ -205,18 +227,21 @@ export class ValidarQrComponent implements OnInit {
     this.cargandoEventos.set(true);
     this.errorEventos.set('');
 
+
     // ADMIN puede operar cualquier evento.
     if (this.auth.tieneRol('ADMIN')) {
 
       this.api.listarEventos().subscribe({
 
         next: respuesta => {
+
           this.establecerEventos(
             respuesta.results
           );
         },
 
         error: () => {
+
           this.errorAlCargarEventos();
         }
       });
@@ -225,8 +250,8 @@ export class ValidarQrComponent implements OnInit {
     }
 
 
-    // ORGANIZADOR puede operar eventos propios
-    // y eventos donde fue asignado.
+    // ORGANIZADOR:
+    // eventos propios + eventos asignados.
     if (
       this.auth.tieneRol(
         'ORGANIZADOR'
@@ -277,18 +302,22 @@ export class ValidarQrComponent implements OnInit {
 
 
     // STAFF.
-    this.api.eventosAsignados().subscribe({
+    this.api
+      .eventosAsignados()
+      .subscribe({
 
-      next: respuesta => {
-        this.establecerEventos(
-          respuesta
-        );
-      },
+        next: respuesta => {
 
-      error: () => {
-        this.errorAlCargarEventos();
-      }
-    });
+          this.establecerEventos(
+            respuesta
+          );
+        },
+
+        error: () => {
+
+          this.errorAlCargarEventos();
+        }
+      });
   }
 
 

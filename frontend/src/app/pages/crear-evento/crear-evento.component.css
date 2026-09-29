@@ -1,0 +1,184 @@
+.create-event-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+
+/* VOLVER */
+
+.back-link {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+
+/* ENCABEZADO */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+/* FORMULARIO */
+
+.event-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 18px;
+}
+
+.form-section {
+  padding: 22px;
+}
+
+
+/* TÍTULOS */
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin: 0;
+
+  font-size: 1rem;
+}
+
+.section-header p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+
+/* CAMPOS */
+
+.form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+.field-full {
+  grid-column: 1 / -1;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+}
+
+.field textarea {
+  min-height: 120px;
+
+  resize: vertical;
+}
+
+
+/* AYUDA */
+
+.field-help {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.field-error {
+  color: #f87171;
+
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+
+/* ACCIONES */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+
+  padding-top: 2px;
+}
+
+.form-actions .btn {
+  min-width: 160px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 750px) {
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .field-full {
+    grid-column: auto;
+  }
+}
+
+
+@media (max-width: 520px) {
+
+  .form-section {
+    padding: 18px;
+  }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}

@@ -5,9 +5,11 @@ import {
   OnInit,
   signal
 } from '@angular/core';
-
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import {
+  ActivatedRoute,
+  RouterLink
+} from '@angular/router';
 
 import {
   Evento,
@@ -22,221 +24,49 @@ import { EventosService } from '../../services/eventos.service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
-  template: `
-    <h1 class="page-title">
-      Reportes
-    </h1>
-
-    <p class="page-subtitle">
-      Consulta los indicadores de inscripción y asistencia
-      de tus eventos.
-    </p>
-
-    <div
-      class="card"
-      style="margin-bottom: 18px"
-    >
-      <div class="row wrap">
-
-        <div
-          class="field"
-          style="flex: 1; min-width: 250px"
-        >
-          <label>Evento</label>
-
-          <select [(ngModel)]="eventoId">
-
-            <option [ngValue]="null">
-              Selecciona un evento
-            </option>
-
-            <option
-              *ngFor="let evento of eventos()"
-              [ngValue]="evento.id"
-            >
-              {{ evento.nombre }}
-            </option>
-
-          </select>
-        </div>
-
-        <button
-          class="btn btn-primary"
-          style="align-self: end"
-          [disabled]="!eventoId || cargando()"
-          (click)="consultar()"
-        >
-          {{
-            cargando()
-              ? 'Generando...'
-              : 'Generar reporte'
-          }}
-        </button>
-
-      </div>
-    </div>
-
-    <div
-      class="error"
-      *ngIf="error()"
-      style="margin-bottom: 16px"
-    >
-      {{ error() }}
-    </div>
-
-    <ng-container *ngIf="reporte() as r">
-
-      <div class="card" style="margin-bottom: 18px">
-
-        <span class="badge">
-          Evento #{{ r.evento.id }}
-        </span>
-
-        <h2 style="margin-top: 8px">
-          {{ r.evento.nombre }}
-        </h2>
-
-      </div>
-
-      <div class="grid grid-4">
-
-        <div class="card kpi">
-
-          <div class="kpi-value">
-            {{ r.inscritos }}
-          </div>
-
-          <div class="kpi-label">
-            Inscritos
-          </div>
-
-        </div>
-
-        <div class="card kpi">
-
-          <div class="kpi-value">
-            {{ r.asistieron }}
-          </div>
-
-          <div class="kpi-label">
-            Asistieron
-          </div>
-
-        </div>
-
-        <div class="card kpi">
-
-          <div class="kpi-value">
-            {{ r.ausentes }}
-          </div>
-
-          <div class="kpi-label">
-            Ausentes
-          </div>
-
-        </div>
-
-        <div class="card kpi">
-
-          <div class="kpi-value">
-            {{ r.porcentaje_asistencia }}%
-          </div>
-
-          <div class="kpi-label">
-            Asistencia
-          </div>
-
-        </div>
-
-      </div>
-
-      <div
-        class="card"
-        style="margin-top: 18px"
-      >
-
-        <h3>
-          Por tipo de entrada
-        </h3>
-
-        <div
-          *ngFor="let tipo of r.tipos_entrada"
-          style="margin-top: 18px"
-        >
-
-          <div class="row between wrap">
-
-            <strong>
-              {{ tipo.nombre }}
-            </strong>
-
-            <span class="muted">
-              {{ tipo.usadas }} /
-              {{ tipo.emitidas }} utilizadas
-            </span>
-
-          </div>
-
-          <div
-            class="metric-bar"
-            style="margin-top: 8px"
-          >
-            <div
-              [style.width.%]="
-                tipo.emitidas
-                  ? (tipo.usadas / tipo.emitidas * 100)
-                  : 0
-              "
-            ></div>
-          </div>
-
-        </div>
-
-        <div
-          class="empty"
-          *ngIf="!r.tipos_entrada.length"
-        >
-          Este evento todavía no tiene entradas emitidas.
-        </div>
-
-      </div>
-
-    </ng-container>
-
-    <div
-      class="empty"
-      *ngIf="!reporte() && !cargando() && !error()"
-    >
-      Selecciona un evento para consultar sus indicadores.
-    </div>
-  `
+  templateUrl: './reportes.component.html',
+  styleUrl: './reportes.component.css'
 })
 export class ReportesComponent implements OnInit {
 
-  api = inject(EventosService);
-  auth = inject(AuthService);
-  route = inject(ActivatedRoute);
+  private readonly api = inject(EventosService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
 
   eventos = signal<Evento[]>([]);
-  reporte = signal<ReporteEvento | null>(null);
+
+  reporte =
+    signal<ReporteEvento | null>(null);
 
   eventoId: number | null = null;
 
   cargando = signal(false);
   error = signal('');
 
+  mostrarVolverMisEventos = signal(false);
+
   ngOnInit(): void {
+
+    this.mostrarVolverMisEventos.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'mis-eventos'
+    );
 
     this.cargarEventos();
   }
 
   cargarEventos(): void {
 
+    this.error.set('');
+
     if (this.auth.tieneRol('ADMIN')) {
 
       this.api.listarEventos().subscribe({
+
         next: respuesta => {
 
           this.eventos.set(
@@ -247,6 +77,7 @@ export class ReportesComponent implements OnInit {
         },
 
         error: () => {
+
           this.error.set(
             'No fue posible cargar los eventos.'
           );
@@ -257,6 +88,7 @@ export class ReportesComponent implements OnInit {
     }
 
     this.api.misEventos().subscribe({
+
       next: respuesta => {
 
         this.eventos.set(respuesta);
@@ -322,5 +154,20 @@ export class ReportesComponent implements OnInit {
         this.cargando.set(false);
       }
     });
+  }
+
+  porcentajeTipo(
+    usadas: number,
+    emitidas: number
+  ): number {
+
+    if (!emitidas) {
+      return 0;
+    }
+
+    return Math.min(
+      (usadas / emitidas) * 100,
+      100
+    );
   }
 }

@@ -1,17 +1,28 @@
-<section class="assigned-events-page">
+<section class="my-events-page">
 
   <header class="page-header">
 
     <div>
       <h1 class="page-title">
-        Eventos asignados
+        Mis eventos
       </h1>
 
       <p class="page-subtitle">
-        Consulta los eventos en los que tienes
-        funciones operativas.
+        Administra los eventos que has creado
+        como organizador.
       </p>
     </div>
+
+
+    <a
+      routerLink="/crear-evento"
+      [queryParams]="{
+        origen: 'mis-eventos'
+      }"
+      class="btn btn-primary"
+    >
+      Crear evento
+    </a>
 
   </header>
 
@@ -28,7 +39,7 @@
     class="empty"
     *ngIf="cargando()"
   >
-    Cargando eventos asignados...
+    Cargando tus eventos...
   </div>
 
 
@@ -41,18 +52,21 @@
   >
 
     <article
-      class="card assigned-event-card"
+      class="card event-card"
       *ngFor="let evento of items()"
     >
 
       <div class="event-card-header">
 
-        <span class="team-badge">
-          EQUIPO
+        <span
+          class="event-status"
+          [ngClass]="claseEstado(evento.estado)"
+        >
+          {{ evento.estado }}
         </span>
 
-        <span class="event-status">
-          {{ evento.estado }}
+        <span class="event-modality">
+          {{ textoModalidad(evento.modalidad) }}
         </span>
 
       </div>
@@ -64,8 +78,11 @@
           {{ evento.nombre }}
         </h2>
 
-        <p *ngIf="evento.descripcion_corta">
-          {{ evento.descripcion_corta }}
+        <p>
+          {{
+            evento.descripcion_corta ||
+            'Este evento no tiene una descripción corta.'
+          }}
         </p>
 
       </div>
@@ -76,7 +93,7 @@
         <div class="event-data">
 
           <span>
-            Fecha
+            Fecha de inicio
           </span>
 
           <strong>
@@ -109,11 +126,15 @@
         <div class="event-data">
 
           <span>
-            Modalidad
+            Visibilidad
           </span>
 
           <strong>
-            {{ textoModalidad(evento.modalidad) }}
+            {{
+              evento.visibilidad === 'PUBLICO'
+                ? 'Público'
+                : 'Privado'
+            }}
           </strong>
 
         </div>
@@ -125,24 +146,42 @@
 
         <a
           class="btn btn-primary"
-          routerLink="/validar-qr"
+          routerLink="/administrar-evento"
           [queryParams]="{
             evento: evento.id,
-            origen: 'eventos-asignados'
+            origen: 'mis-eventos'
           }"
         >
-          Validar entradas
+          Administrar
         </a>
+
 
         <a
           class="btn btn-secondary"
-          routerLink="/asistentes"
+          routerLink="/reportes"
           [queryParams]="{
             evento: evento.id,
-            origen: 'eventos-asignados'
+            origen: 'mis-eventos'
           }"
         >
-          Ver asistentes
+          Reporte
+        </a>
+
+
+        <a
+          class="event-link"
+          [routerLink]="[
+            '/eventos',
+            evento.id
+          ]"
+          [queryParams]="{
+            origen: 'mis-eventos'
+          }"
+        >
+          Ver evento
+          <span aria-hidden="true">
+            →
+          </span>
         </a>
 
       </footer>
@@ -162,13 +201,20 @@
   >
 
     <h3>
-      No tienes eventos asignados
+      Todavía no tienes eventos
     </h3>
 
     <p>
-      Cuando seas agregado al equipo de un evento,
-      aparecerá aquí.
+      Crea tu primer evento para comenzar
+      a administrarlo desde NOVA.
     </p>
+
+    <a
+      routerLink="/crear-evento"
+      class="btn btn-primary"
+    >
+      Crear mi primer evento
+    </a>
 
   </div>
 

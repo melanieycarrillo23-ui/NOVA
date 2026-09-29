@@ -17,135 +17,99 @@ import { EventosService } from '../../services/eventos.service';
     CommonModule,
     RouterLink
   ],
-  template: `
-    <div class="row between wrap">
-
-      <div>
-        <h1 class="page-title">
-          Mis eventos
-        </h1>
-
-        <p class="page-subtitle">
-          Eventos que administras como organizador.
-        </p>
-      </div>
-
-      <a
-        routerLink="/crear-evento"
-        class="btn btn-primary"
-      >
-        Crear evento
-      </a>
-
-    </div>
-
-    <div
-      class="error"
-      *ngIf="error()"
-      style="margin-bottom: 16px"
-    >
-      {{ error() }}
-    </div>
-
-    <div class="grid grid-3">
-
-      <div
-        class="card event-card"
-        *ngFor="let evento of items()"
-      >
-
-        <div class="event-top">
-
-          <span class="badge">
-            {{ evento.estado }}
-          </span>
-
-          <span class="muted">
-            #{{ evento.id }}
-          </span>
-
-        </div>
-
-        <h3>
-          {{ evento.nombre }}
-        </h3>
-
-        <p class="secondary">
-          {{ evento.descripcion_corta }}
-        </p>
-
-        <div class="event-meta">
-
-          <span>
-            {{ evento.fecha_hora_inicio | date:'medium' }}
-          </span>
-
-          <span>
-            {{ evento.lugar_nombre || evento.modalidad }}
-          </span>
-
-        </div>
-
-        <div
-          class="row wrap"
-          style="margin-top: 16px"
-        >
-
-          <a
-            class="btn btn-secondary"
-            routerLink="/administrar-evento"
-            [queryParams]="{ evento: evento.id }"
-          >
-            Administrar
-          </a>
-
-          <a
-            class="btn btn-ghost"
-            routerLink="/reportes"
-            [queryParams]="{ evento: evento.id }"
-          >
-            Reporte
-          </a>
-
-          <a
-            class="btn btn-ghost"
-            [routerLink]="['/eventos', evento.id]"
-          >
-            Ver
-          </a>
-
-        </div>
-
-      </div>
-
-    </div>
-
-    <div
-      class="empty"
-      *ngIf="!items().length && !error()"
-    >
-      No administras eventos todavía.
-    </div>
-  `
+  templateUrl: './mis-eventos.component.html',
+  styleUrl: './mis-eventos.component.css'
 })
 export class MisEventosComponent implements OnInit {
 
-  api = inject(EventosService);
+  private readonly api = inject(EventosService);
 
   items = signal<Evento[]>([]);
+  cargando = signal(true);
   error = signal('');
 
   ngOnInit(): void {
+    this.cargarEventos();
+  }
+
+  formatearFecha(fecha: string): string {
+    return new Intl.DateTimeFormat(
+      'es-CO',
+      {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit'
+      }
+    ).format(new Date(fecha));
+  }
+
+  textoModalidad(modalidad: string): string {
+
+    switch (modalidad) {
+      case 'PRESENCIAL':
+        return 'Presencial';
+
+      case 'VIRTUAL':
+        return 'Virtual';
+
+      case 'HIBRIDO':
+        return 'Híbrido';
+
+      default:
+        return modalidad;
+    }
+  }
+
+  claseEstado(estado: string): string {
+
+    switch (estado) {
+      case 'PUBLICADO':
+        return 'status-published';
+
+      case 'BORRADOR':
+        return 'status-draft';
+
+      case 'CANCELADO':
+        return 'status-cancelled';
+
+      case 'FINALIZADO':
+        return 'status-finished';
+
+      default:
+        return '';
+    }
+  }
+
+  private cargarEventos(): void {
+
+    this.cargando.set(true);
+    this.error.set('');
 
     this.api.misEventos().subscribe({
+
       next: respuesta => {
-        this.items.set(respuesta);
+
+        const ordenados = [...respuesta].sort(
+          (a, b) =>
+            new Date(a.fecha_hora_inicio).getTime() -
+            new Date(b.fecha_hora_inicio).getTime()
+        );
+
+        this.items.set(ordenados);
+        this.cargando.set(false);
       },
 
       error: () => {
+
+        this.items.set([]);
+
         this.error.set(
           'No fue posible cargar tus eventos.'
         );
+
+        this.cargando.set(false);
       }
     });
   }

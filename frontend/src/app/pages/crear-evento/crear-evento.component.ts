@@ -1,2 +1,148 @@
-import { CommonModule } from '@angular/common'; import { Component,inject,signal } from '@angular/core'; import { FormBuilder,ReactiveFormsModule,Validators } from '@angular/forms'; import { Router } from '@angular/router'; import { EventosService } from '../../services/eventos.service';
-@Component({selector:'app-crear-evento',standalone:true,imports:[CommonModule,ReactiveFormsModule],template:`<h1 class="page-title">Crear evento</h1><p class="page-subtitle">Crea la información principal. Los tipos de entrada y el STAFF se gestionan después.</p><div class="card"><form [formGroup]="form" (ngSubmit)="crear()" class="stack"><div class="form-grid"><div class="field"><label>Nombre</label><input formControlName="nombre"></div><div class="field"><label>Modalidad</label><select formControlName="modalidad"><option value="PRESENCIAL">Presencial</option><option value="VIRTUAL">Virtual</option><option value="HIBRIDO">Híbrido</option></select></div><div class="field"><label>Inicio</label><input type="datetime-local" formControlName="fecha_hora_inicio"></div><div class="field"><label>Fin</label><input type="datetime-local" formControlName="fecha_hora_fin"></div><div class="field"><label>Capacidad</label><input type="number" formControlName="capacidad"></div><div class="field"><label>Visibilidad</label><select formControlName="visibilidad"><option value="PUBLICO">Público</option><option value="PRIVADO">Privado</option></select></div></div><div class="field"><label>Descripción corta</label><input formControlName="descripcion_corta"></div><div class="field"><label>Descripción</label><textarea rows="5" formControlName="descripcion"></textarea></div><div class="field"><label>Estado inicial</label><select formControlName="estado"><option value="BORRADOR">Borrador</option><option value="PUBLICADO">Publicado</option></select></div><div class="error" *ngIf="error()">{{error()}}</div><button class="btn btn-primary" [disabled]="form.invalid">Guardar evento</button></form></div>`}) export class CrearEventoComponent{private fb=inject(FormBuilder);api=inject(EventosService);router=inject(Router);error=signal('');form=this.fb.nonNullable.group({nombre:['',Validators.required],modalidad:['PRESENCIAL'],fecha_hora_inicio:['',Validators.required],fecha_hora_fin:['',Validators.required],capacidad:[100],visibilidad:['PUBLICO'],descripcion_corta:[''],descripcion:[''],estado:['BORRADOR']});crear(){const raw=this.form.getRawValue();this.api.crearEvento({...raw,fecha_hora_inicio:new Date(raw.fecha_hora_inicio).toISOString(),fecha_hora_fin:new Date(raw.fecha_hora_fin).toISOString()} as any).subscribe({next:()=>this.router.navigate(['/mis-eventos']),error:e=>this.error.set(JSON.stringify(e?.error||'No fue posible guardar el evento.'))})}}
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  inject,
+  signal
+} from '@angular/core';
+import {
+  FormBuilder,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
+
+import { EventosService } from '../../services/eventos.service';
+
+
+@Component({
+  selector: 'app-crear-evento',
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule
+  ],
+  templateUrl: './crear-evento.component.html',
+  styleUrl: './crear-evento.component.css'
+})
+export class CrearEventoComponent {
+
+  private readonly fb = inject(FormBuilder);
+  private readonly api = inject(EventosService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  error = signal('');
+  guardando = signal(false);
+
+  mostrarVolverMisEventos =
+    this.route.snapshot
+      .queryParamMap
+      .get('origen') === 'mis-eventos';
+
+
+  form = this.fb.nonNullable.group({
+
+    nombre: [
+      '',
+      Validators.required
+    ],
+
+    modalidad: [
+      'PRESENCIAL'
+    ],
+
+    fecha_hora_inicio: [
+      '',
+      Validators.required
+    ],
+
+    fecha_hora_fin: [
+      '',
+      Validators.required
+    ],
+
+    capacidad: [
+      100
+    ],
+
+    visibilidad: [
+      'PUBLICO'
+    ],
+
+    descripcion_corta: [
+      ''
+    ],
+
+    descripcion: [
+      ''
+    ],
+
+    estado: [
+      'BORRADOR'
+    ]
+  });
+
+
+  volver(): void {
+
+    this.router.navigate([
+      '/mis-eventos'
+    ]);
+  }
+
+
+  crear(): void {
+
+    if (
+      this.form.invalid ||
+      this.guardando()
+    ) {
+      return;
+    }
+
+    const raw =
+      this.form.getRawValue();
+
+    this.error.set('');
+    this.guardando.set(true);
+
+    this.api.crearEvento({
+
+      ...raw,
+
+      fecha_hora_inicio:
+        new Date(
+          raw.fecha_hora_inicio
+        ).toISOString(),
+
+      fecha_hora_fin:
+        new Date(
+          raw.fecha_hora_fin
+        ).toISOString()
+
+    } as any).subscribe({
+
+      next: () => {
+
+        this.guardando.set(false);
+
+        this.router.navigate([
+          '/mis-eventos'
+        ]);
+      },
+
+      error: respuesta => {
+
+        this.error.set(
+          respuesta?.error?.detail ||
+          'No fue posible guardar el evento.'
+        );
+
+        this.guardando.set(false);
+      }
+    });
+  }
+}

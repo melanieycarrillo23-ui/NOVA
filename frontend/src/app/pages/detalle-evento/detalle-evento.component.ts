@@ -6,7 +6,8 @@ import {
   signal
 } from '@angular/core';
 import {
-  ActivatedRoute
+  ActivatedRoute,
+  Router
 } from '@angular/router';
 import { forkJoin } from 'rxjs';
 
@@ -30,6 +31,7 @@ export class DetalleEventoComponent implements OnInit {
 
   private readonly api = inject(EventosService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly location = inject(Location);
 
   evento = signal<Evento | null>(null);
@@ -40,18 +42,29 @@ export class DetalleEventoComponent implements OnInit {
 
   mensaje = signal('');
   error = signal('');
-  
+
+  vieneDeMisEventos = signal(false);
 
   ngOnInit(): void {
+
+    this.vieneDeMisEventos.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'mis-eventos'
+    );
+
     const id = Number(
       this.route.snapshot.paramMap.get('id')
     );
 
     if (!id) {
+
       this.errorCarga.set(
         'No fue posible identificar el evento.'
       );
+
       this.cargando.set(false);
+
       return;
     }
 
@@ -59,6 +72,7 @@ export class DetalleEventoComponent implements OnInit {
   }
 
   inscribirme(tipoId: number): void {
+
     const evento = this.evento();
 
     if (!evento) {
@@ -72,12 +86,16 @@ export class DetalleEventoComponent implements OnInit {
       evento.id,
       tipoId
     ).subscribe({
+
       next: () => {
+
         this.mensaje.set(
           'Inscripción confirmada. Tu entrada ya está disponible en Mis entradas.'
         );
       },
+
       error: respuesta => {
+
         this.error.set(
           respuesta?.error?.detail ||
           'No fue posible completar la inscripción.'
@@ -87,6 +105,7 @@ export class DetalleEventoComponent implements OnInit {
   }
 
   formatearFecha(fecha: string): string {
+
     return new Intl.DateTimeFormat(
       'es-CO',
       {
@@ -96,7 +115,9 @@ export class DetalleEventoComponent implements OnInit {
         hour: 'numeric',
         minute: '2-digit'
       }
-    ).format(new Date(fecha));
+    ).format(
+      new Date(fecha)
+    );
   }
 
   formatearPrecio(
@@ -120,17 +141,45 @@ export class DetalleEventoComponent implements OnInit {
   }
 
   volver(): void {
+
+    if (this.vieneDeMisEventos()) {
+
+      this.router.navigate([
+        '/mis-eventos'
+      ]);
+
+      return;
+    }
+
     this.location.back();
   }
 
-  private cargarEvento(id: number): void {
+  textoVolver(): string {
+
+    if (this.vieneDeMisEventos()) {
+      return 'Volver a mis eventos';
+    }
+
+    return 'Volver';
+  }
+
+  private cargarEvento(
+    id: number
+  ): void {
+
     this.cargando.set(true);
     this.errorCarga.set('');
 
     forkJoin({
-      evento: this.api.verEvento(id),
-      tipos: this.api.tiposEntrada(id)
+
+      evento:
+        this.api.verEvento(id),
+
+      tipos:
+        this.api.tiposEntrada(id)
+
     }).subscribe({
+
       next: respuesta => {
 
         this.evento.set(
@@ -147,7 +196,9 @@ export class DetalleEventoComponent implements OnInit {
 
         this.cargando.set(false);
       },
+
       error: () => {
+
         this.errorCarga.set(
           'No fue posible cargar la información del evento.'
         );

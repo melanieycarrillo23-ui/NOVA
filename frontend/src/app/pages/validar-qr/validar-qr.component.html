@@ -1,32 +1,37 @@
 <section class="validation-page">
-    <button
-        type="button"
-        class="back-link"
-        (click)="volver()"
-    >
-        <span aria-hidden="true">
-            ←
-        </span>
 
-        Volver
-    </button>
+  <!-- VOLVER -->
+  <button
+    *ngIf="mostrarVolverEventosAsignados()"
+    type="button"
+    class="back-link"
+    (click)="volver()"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver a eventos asignados
+  </button>
 
+
+  <!-- ENCABEZADO -->
   <header class="page-header">
 
     <div>
+
       <h1 class="page-title">
-        Validar entrada QR
+        Validar entradas
       </h1>
 
       <p class="page-subtitle">
-        Valida una entrada y registra
-        la asistencia del participante.
+        Verifica las entradas QR de los participantes
+        del evento.
       </p>
+
     </div>
 
   </header>
 
 
+  <!-- ERROR AL CARGAR EVENTOS -->
   <div
     class="error"
     *ngIf="errorEventos()"
@@ -35,58 +40,54 @@
   </div>
 
 
-  <div class="validation-layout">
+  <!-- CONTENIDO -->
+  <div class="validation-grid">
 
-    <!-- VALIDACIÓN -->
 
-    <article class="card validation-card">
+    <!-- FORMULARIO -->
+    <section class="card validation-card">
 
       <div class="card-header">
 
         <div>
-          <h2>
-            Validar entrada
-          </h2>
 
-          <p>
-            Selecciona el evento y pega
-            el contenido leído del código QR.
+          <h3>
+            Validar entrada
+          </h3>
+
+          <p class="secondary">
+            Selecciona el evento e introduce
+            el contenido del código QR.
           </p>
+
         </div>
 
       </div>
 
 
       <form
-        class="validation-form"
         [formGroup]="form"
         (ngSubmit)="validar()"
+        class="validation-form"
       >
 
         <div class="field">
 
-          <label for="evento">
+          <label for="evento-validacion">
             Evento
           </label>
 
           <select
-            id="evento"
+            id="evento-validacion"
             formControlName="evento_id"
-            [disabled]="cargandoEventos()"
           >
 
             <option [ngValue]="0">
-              {{
-                cargandoEventos()
-                  ? 'Cargando eventos...'
-                  : 'Selecciona un evento'
-              }}
+              Selecciona un evento
             </option>
 
             <option
-              *ngFor="
-                let evento of eventos()
-              "
+              *ngFor="let evento of eventos()"
               [ngValue]="evento.id"
             >
               {{ evento.nombre }}
@@ -99,22 +100,16 @@
 
         <div class="field">
 
-          <label for="token">
-            Contenido del QR
+          <label for="token-qr">
+            Código QR
           </label>
 
           <textarea
-            id="token"
-            rows="7"
+            id="token-qr"
+            rows="5"
             formControlName="token_qr"
-            placeholder="Pega aquí el contenido leído del código QR"
-            autocomplete="off"
+            placeholder="Pega aquí el contenido de la entrada QR"
           ></textarea>
-
-          <small>
-            El contenido se obtiene al leer
-            el código QR de la entrada.
-          </small>
 
         </div>
 
@@ -122,24 +117,11 @@
         <div class="form-actions">
 
           <button
-            type="button"
-            class="btn btn-ghost"
-            [disabled]="
-              procesando() ||
-              !form.controls.token_qr.value
-            "
-            (click)="limpiar()"
-          >
-            Limpiar
-          </button>
-
-          <button
             type="submit"
             class="btn btn-primary"
             [disabled]="
               form.invalid ||
-              procesando() ||
-              cargandoEventos()
+              procesando()
             "
           >
             {{
@@ -149,32 +131,24 @@
             }}
           </button>
 
+
+          <button
+            type="button"
+            class="btn btn-ghost"
+            (click)="limpiar()"
+          >
+            Limpiar
+          </button>
+
         </div>
 
       </form>
 
-    </article>
+    </section>
 
 
     <!-- RESULTADO -->
-
     <article class="card result-card">
-
-      <div class="card-header">
-
-        <div>
-          <h2>
-            Resultado
-          </h2>
-
-          <p>
-            Aquí aparecerá el resultado
-            de la validación.
-          </p>
-        </div>
-
-      </div>
-
 
       <ng-container
         *ngIf="
@@ -183,15 +157,15 @@
         "
       >
 
-        <!-- VÁLIDA -->
 
+        <!-- ENTRADA VÁLIDA -->
         <div
           class="validation-result result-valid"
           *ngIf="esValido()"
         >
 
           <div class="result-symbol">
-            ✓
+            &#10003;
           </div>
 
           <div class="result-information">
@@ -205,8 +179,7 @@
             </strong>
 
             <span>
-              Asistencia registrada
-              correctamente.
+              Asistencia registrada correctamente.
             </span>
 
           </div>
@@ -214,8 +187,7 @@
         </div>
 
 
-        <!-- NO VÁLIDA -->
-
+        <!-- ENTRADA NO VÁLIDA -->
         <div
           class="validation-result result-invalid"
           *ngIf="!esValido()"
@@ -244,6 +216,7 @@
         </div>
 
 
+        <!-- PARTICIPANTE -->
         <div
           class="participant-data"
           *ngIf="resultado.participante"
@@ -262,6 +235,7 @@
       </ng-container>
 
 
+      <!-- SIN VALIDACIÓN -->
       <ng-template #esperando>
 
         <div class="waiting-result">

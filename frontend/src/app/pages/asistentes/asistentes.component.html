@@ -1,17 +1,18 @@
 <section class="attendees-page">
 
-    <button
-        type="button"
-        class="back-link"
-        (click)="volver()"
-    >
-        <span aria-hidden="true">
-            ←
-        </span>
+  <!-- VOLVER -->
+  <button
+    *ngIf="mostrarVolverEventosAsignados()"
+    type="button"
+    class="back-link"
+    (click)="volver()"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver a eventos asignados
+  </button>
 
-        Volver
-    </button>
 
+  <!-- ENCABEZADO -->
   <header class="page-header">
 
     <div>
@@ -20,14 +21,15 @@
       </h1>
 
       <p class="page-subtitle">
-        Consulta los participantes inscritos
-        en los eventos que tienes autorizado gestionar.
+        Consulta las personas inscritas
+        en un evento.
       </p>
     </div>
 
   </header>
 
 
+  <!-- ERROR AL CARGAR EVENTOS -->
   <div
     class="error"
     *ngIf="errorEventos()"
@@ -36,62 +38,58 @@
   </div>
 
 
-  <!-- BUSCADOR -->
+  <!-- SELECTOR -->
+  <section class="card selector-card">
 
-  <section class="card event-selector">
+    <div class="selector-row">
 
-    <div class="selector-field">
+      <div class="field selector-field">
 
-      <label for="evento">
-        Evento
-      </label>
+        <label for="evento-asistentes">
+          Evento
+        </label>
 
-      <select
-        id="evento"
-        [(ngModel)]="eventoId"
-        [disabled]="cargandoEventos()"
-      >
-
-        <option [ngValue]="null">
-          {{
-            cargandoEventos()
-              ? 'Cargando eventos...'
-              : 'Selecciona un evento'
-          }}
-        </option>
-
-        <option
-          *ngFor="let evento of eventos()"
-          [ngValue]="evento.id"
+        <select
+          id="evento-asistentes"
+          [(ngModel)]="eventoId"
+          [disabled]="cargandoEventos()"
         >
-          {{ evento.nombre }}
-        </option>
 
-      </select>
+          <option [ngValue]="null">
+            Selecciona un evento
+          </option>
+
+          <option
+            *ngFor="let evento of eventos()"
+            [ngValue]="evento.id"
+          >
+            {{ evento.nombre }}
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-primary selector-button"
+        [disabled]="!eventoId || cargando()"
+        (click)="buscar()"
+      >
+        {{
+          cargando()
+            ? 'Consultando...'
+            : 'Consultar asistentes'
+        }}
+      </button>
 
     </div>
-
-
-    <button
-      type="button"
-      class="btn btn-primary"
-      [disabled]="
-        !eventoId ||
-        cargando() ||
-        cargandoEventos()
-      "
-      (click)="buscar()"
-    >
-      {{
-        cargando()
-          ? 'Consultando...'
-          : 'Consultar asistentes'
-      }}
-    </button>
 
   </section>
 
 
+  <!-- ERROR DE CONSULTA -->
   <div
     class="error"
     *ngIf="error()"
@@ -100,204 +98,133 @@
   </div>
 
 
+  <!-- CARGANDO -->
+  <div
+    class="empty"
+    *ngIf="cargando()"
+  >
+    Cargando asistentes...
+  </div>
+
+
   <!-- RESULTADOS -->
+  <section
+    class="card attendees-card"
+    *ngIf="
+      eventoId &&
+      !cargando() &&
+      !error()
+    "
+  >
 
-  <section class="card attendees-card">
-
-    <div
-      class="attendees-header"
-      *ngIf="
-        eventoId &&
-        !cargando() &&
-        !error()
-      "
-    >
+    <header class="attendees-header">
 
       <div>
-        <h2>
-          Participantes
-        </h2>
 
-        <p>
+        <h3>
+          Participantes
+        </h3>
+
+        <p class="secondary">
           Personas registradas en el evento seleccionado.
         </p>
+
       </div>
 
-      <span
-        class="attendees-count"
-        *ngIf="items().length"
-      >
+
+      <span class="attendees-count">
+        {{ items().length }}
         {{
           items().length === 1
-            ? '1 participante'
-            : items().length + ' participantes'
+            ? 'participante'
+            : 'participantes'
         }}
       </span>
 
-    </div>
+    </header>
 
 
+    <!-- LISTADO -->
     <div
-      class="loading-state"
-      *ngIf="cargando()"
-    >
-      Consultando asistentes...
-    </div>
-
-
-    <div
-      class="table-container"
-      *ngIf="
-        !cargando() &&
-        items().length
-      "
+      class="attendees-list"
+      *ngIf="items().length"
     >
 
-      <table class="attendees-table">
+      <article
+        class="attendee-row"
+        *ngFor="let inscripcion of items()"
+      >
 
-        <thead>
+        <div class="attendee-main">
 
-          <tr>
-            <th>
-              Participante
-            </th>
-
-            <th>
-              Estado
-            </th>
-
-            <th>
-              Fecha de inscripción
-            </th>
-          </tr>
-
-        </thead>
+          <div class="attendee-avatar">
+            {{
+              (inscripcion.usuario_nombre || '?')
+                .charAt(0)
+                .toUpperCase()
+            }}
+          </div>
 
 
-        <tbody>
+          <div class="attendee-info">
 
-          <tr
-            *ngFor="
-              let inscripcion of items()
-            "
-          >
-
-            <td>
-
-              <div class="participant">
-
-                <div
-                  class="participant-avatar"
-                  aria-hidden="true"
-                >
-                  {{
-                    (
-                      inscripcion.usuario_nombre ||
-                      'U'
-                    ).charAt(0)
-                  }}
-                </div>
-
-                <strong>
-                  {{
-                    inscripcion.usuario_nombre ||
-                    'Usuario'
-                  }}
-                </strong>
-
-              </div>
-
-            </td>
-
-
-            <td>
-
-              <span
-                class="registration-status"
-                [ngClass]="
-                  claseEstado(
-                    inscripcion.estado
-                  )
-                "
-              >
-                {{ inscripcion.estado }}
-              </span>
-
-            </td>
-
-
-            <td class="registration-date">
-
+            <strong>
               {{
-                formatearFecha(
-                  inscripcion.inscrito_en
-                )
+                inscripcion.usuario_nombre ||
+                'Participante'
               }}
+            </strong>
 
-            </td>
+            <span>
+              Inscripción #{{ inscripcion.id }}
+            </span>
 
-          </tr>
+          </div>
 
-        </tbody>
-
-      </table>
-
-    </div>
+        </div>
 
 
-    <!-- SIN SELECCIÓN -->
+        <span
+          class="attendee-status"
+          [ngClass]="claseEstado(inscripcion.estado)"
+        >
+          {{ inscripcion.estado }}
+        </span>
 
-    <div
-      class="empty-state"
-      *ngIf="
-        !eventoId &&
-        !cargando()
-      "
-    >
-
-      <div class="empty-symbol">
-        P
-      </div>
-
-      <strong>
-        Selecciona un evento
-      </strong>
-
-      <p>
-        Elige un evento para consultar
-        sus participantes.
-      </p>
+      </article>
 
     </div>
 
 
-    <!-- EVENTO SIN PARTICIPANTES -->
-
+    <!-- SIN PARTICIPANTES -->
     <div
-      class="empty-state"
-      *ngIf="
-        eventoId &&
-        !cargando() &&
-        !items().length &&
-        !error()
-      "
+      class="empty compact-empty"
+      *ngIf="!items().length"
     >
-
-      <div class="empty-symbol">
-        0
-      </div>
-
-      <strong>
-        No hay participantes
-      </strong>
-
-      <p>
-        Este evento todavía no tiene
-        inscripciones registradas.
-      </p>
-
+      Este evento todavía no tiene participantes.
     </div>
 
   </section>
+
+
+  <!-- ESTADO INICIAL -->
+  <div
+    class="empty initial-empty"
+    *ngIf="
+      !eventoId &&
+      !cargando()
+    "
+  >
+
+    <h3>
+      Selecciona un evento
+    </h3>
+
+    <p>
+      Elige un evento para consultar
+      sus participantes.
+    </p>
+
+  </div>
 
 </section>

@@ -1,4 +1,4 @@
-import { CommonModule, Location } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   Component,
   inject,
@@ -6,7 +6,11 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+
+import {
+  ActivatedRoute,
+  Router
+} from '@angular/router';
 
 import {
   catchError,
@@ -21,6 +25,7 @@ import {
 
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
+
 
 @Component({
   selector: 'app-asistentes',
@@ -37,11 +42,7 @@ export class AsistentesComponent implements OnInit {
   private readonly api = inject(EventosService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
-  private readonly location = inject(Location);
-
-  volver(): void {
-    this.location.back();
-  }
+  private readonly router = inject(Router);
 
   eventos = signal<Evento[]>([]);
   items = signal<Inscripcion[]>([]);
@@ -54,21 +55,42 @@ export class AsistentesComponent implements OnInit {
   error = signal('');
   errorEventos = signal('');
 
+  mostrarVolverEventosAsignados =
+    signal(false);
+
+
   ngOnInit(): void {
+
+    this.mostrarVolverEventosAsignados.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'eventos-asignados'
+    );
 
     this.cargarEventos();
 
     const id = Number(
-      this.route.snapshot.queryParamMap.get(
-        'evento'
-      )
+      this.route.snapshot
+        .queryParamMap
+        .get('evento')
     );
 
     if (id > 0) {
+
       this.eventoId = id;
+
       this.buscar();
     }
   }
+
+
+  volver(): void {
+
+    this.router.navigate([
+      '/eventos-asignados'
+    ]);
+  }
+
 
   buscar(): void {
 
@@ -112,7 +134,10 @@ export class AsistentesComponent implements OnInit {
     });
   }
 
-  formatearFecha(fecha: string): string {
+
+  formatearFecha(
+    fecha: string
+  ): string {
 
     return new Intl.DateTimeFormat(
       'es-CO',
@@ -121,10 +146,15 @@ export class AsistentesComponent implements OnInit {
         month: 'long',
         year: 'numeric'
       }
-    ).format(new Date(fecha));
+    ).format(
+      new Date(fecha)
+    );
   }
 
-  claseEstado(estado: string): string {
+
+  claseEstado(
+    estado: string
+  ): string {
 
     switch (estado) {
 
@@ -139,32 +169,41 @@ export class AsistentesComponent implements OnInit {
     }
   }
 
+
   private cargarEventos(): void {
 
     this.cargandoEventos.set(true);
     this.errorEventos.set('');
 
+
     // ADMIN puede consultar cualquier evento.
-    if (this.auth.tieneRol('ADMIN')) {
+    if (
+      this.auth.tieneRol('ADMIN')
+    ) {
 
-      this.api.listarEventos().subscribe({
+      this.api
+        .listarEventos()
+        .subscribe({
 
-        next: respuesta => {
-          this.establecerEventos(
-            respuesta.results
-          );
-        },
+          next: respuesta => {
 
-        error: () => {
-          this.errorAlCargarEventos();
-        }
-      });
+            this.establecerEventos(
+              respuesta.results
+            );
+          },
+
+          error: () => {
+
+            this.errorAlCargarEventos();
+          }
+        });
 
       return;
     }
 
-    // ORGANIZADOR puede consultar eventos propios
-    // y aquellos donde también fue asignado.
+
+    // ORGANIZADOR puede consultar
+    // eventos propios y asignados.
     if (
       this.auth.tieneRol(
         'ORGANIZADOR'
@@ -174,9 +213,11 @@ export class AsistentesComponent implements OnInit {
       forkJoin({
 
         propios:
-          this.api.misEventos().pipe(
-            catchError(() => of([]))
-          ),
+          this.api
+            .misEventos()
+            .pipe(
+              catchError(() => of([]))
+            ),
 
         asignados:
           this.api
@@ -213,20 +254,26 @@ export class AsistentesComponent implements OnInit {
       return;
     }
 
+
     // STAFF.
-    this.api.eventosAsignados().subscribe({
+    this.api
+      .eventosAsignados()
+      .subscribe({
 
-      next: respuesta => {
-        this.establecerEventos(
-          respuesta
-        );
-      },
+        next: respuesta => {
 
-      error: () => {
-        this.errorAlCargarEventos();
-      }
-    });
+          this.establecerEventos(
+            respuesta
+          );
+        },
+
+        error: () => {
+
+          this.errorAlCargarEventos();
+        }
+      });
   }
+
 
   private establecerEventos(
     eventos: Evento[]
@@ -243,9 +290,13 @@ export class AsistentesComponent implements OnInit {
           ).getTime()
       );
 
-    this.eventos.set(ordenados);
+    this.eventos.set(
+      ordenados
+    );
+
     this.cargandoEventos.set(false);
   }
+
 
   private errorAlCargarEventos(): void {
 

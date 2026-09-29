@@ -1,0 +1,1129 @@
+<section class="manage-event-page">
+
+  <!-- VOLVER -->
+  <a
+    *ngIf="mostrarVolverMisEventos()"
+    routerLink="/mis-eventos"
+    class="back-link"
+  >
+    <span aria-hidden="true">←</span>
+    Volver a mis eventos
+  </a>
+
+
+  <!-- ENCABEZADO -->
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Administrar evento
+      </h1>
+
+      <p class="page-subtitle">
+        Gestiona la información, entradas,
+        equipo y asistencia de tus eventos.
+      </p>
+    </div>
+
+  </header>
+
+
+  <!-- SELECTOR DE EVENTO -->
+  <section class="card selector-card">
+
+    <div class="event-selector-row">
+
+      <div class="field event-selector-field">
+
+        <label for="evento">
+          Evento
+        </label>
+
+        <select
+          id="evento"
+          [(ngModel)]="eventoId"
+        >
+
+          <option [ngValue]="null">
+            Selecciona un evento
+          </option>
+
+          <option
+            *ngFor="let evento of eventos()"
+            [ngValue]="evento.id"
+          >
+            {{ evento.nombre }}
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-primary selector-button"
+        [disabled]="!eventoId || cargando()"
+        (click)="cargar()"
+      >
+        {{
+          cargando()
+            ? 'Cargando...'
+            : 'Abrir panel'
+        }}
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ERROR GENERAL -->
+  <div
+    class="error general-message"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <!-- PANEL DEL EVENTO -->
+  <ng-container *ngIf="reporte() as r">
+
+    <div class="management-content">
+
+
+      <!-- RESUMEN DEL EVENTO -->
+      <section class="card event-summary">
+
+        <div class="event-summary-content">
+
+          <div>
+
+            <span class="badge">
+              Evento #{{ r.evento.id }}
+            </span>
+
+            <h2>
+              {{ r.evento.nombre }}
+            </h2>
+
+          </div>
+
+
+          <span class="badge green attendance-badge">
+            {{ r.porcentaje_asistencia }}% asistencia
+          </span>
+
+        </div>
+
+      </section>
+
+
+      <!-- INFORMACIÓN DEL EVENTO -->
+      <section class="card event-information-card">
+
+        <div class="card-header">
+
+          <div>
+
+            <h3>
+              Información del evento
+            </h3>
+
+            <p class="secondary">
+              Modifica los datos principales
+              del evento.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="notice section-message"
+          *ngIf="mensajeEvento()"
+        >
+          {{ mensajeEvento() }}
+        </div>
+
+
+        <div
+          class="error section-message"
+          *ngIf="errorEvento()"
+        >
+          {{ errorEvento() }}
+        </div>
+
+
+        <div class="form-stack">
+
+          <div class="field">
+
+            <label for="nombre-evento">
+              Nombre
+            </label>
+
+            <input
+              id="nombre-evento"
+              [(ngModel)]="edicionEvento.nombre"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="descripcion-corta">
+              Descripción corta
+            </label>
+
+            <input
+              id="descripcion-corta"
+              [(ngModel)]="edicionEvento.descripcion_corta"
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label for="descripcion-evento">
+              Descripción
+            </label>
+
+            <textarea
+              id="descripcion-evento"
+              rows="4"
+              [(ngModel)]="edicionEvento.descripcion"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="modalidad">
+                Modalidad
+              </label>
+
+              <select
+                id="modalidad"
+                [(ngModel)]="edicionEvento.modalidad"
+              >
+                <option value="PRESENCIAL">
+                  Presencial
+                </option>
+
+                <option value="VIRTUAL">
+                  Virtual
+                </option>
+
+                <option value="HIBRIDO">
+                  Híbrido
+                </option>
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="capacidad">
+                Capacidad
+              </label>
+
+              <input
+                id="capacidad"
+                type="number"
+                min="1"
+                [(ngModel)]="edicionEvento.capacidad"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="fecha-inicio">
+                Fecha y hora de inicio
+              </label>
+
+              <input
+                id="fecha-inicio"
+                type="datetime-local"
+                [(ngModel)]="edicionEvento.fecha_hora_inicio"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="fecha-fin">
+                Fecha y hora de finalización
+              </label>
+
+              <input
+                id="fecha-fin"
+                type="datetime-local"
+                [(ngModel)]="edicionEvento.fecha_hora_fin"
+              >
+
+            </div>
+
+          </div>
+
+
+          <div class="form-grid">
+
+            <div class="field">
+
+              <label for="visibilidad">
+                Visibilidad
+              </label>
+
+              <select
+                id="visibilidad"
+                [(ngModel)]="edicionEvento.visibilidad"
+              >
+                <option value="PUBLICO">
+                  Público
+                </option>
+
+                <option value="PRIVADO">
+                  Privado
+                </option>
+              </select>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="estado-evento">
+                Estado
+              </label>
+
+              <select
+                id="estado-evento"
+                [(ngModel)]="edicionEvento.estado"
+              >
+                <option value="BORRADOR">
+                  Borrador
+                </option>
+
+                <option value="PUBLICADO">
+                  Publicado
+                </option>
+
+                <option value="CANCELADO">
+                  Cancelado
+                </option>
+
+                <option value="FINALIZADO">
+                  Finalizado
+                </option>
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div class="form-actions">
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="guardandoEvento()"
+              (click)="guardarEvento()"
+            >
+              {{
+                guardandoEvento()
+                  ? 'Guardando cambios...'
+                  : 'Guardar cambios'
+              }}
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ESTADÍSTICAS -->
+      <section class="stats-grid">
+
+        <article class="card stat-card">
+
+          <span class="stat-value">
+            {{ r.inscritos }}
+          </span>
+
+          <span class="stat-label">
+            Inscritos
+          </span>
+
+        </article>
+
+
+        <article class="card stat-card">
+
+          <span class="stat-value">
+            {{ r.asistieron }}
+          </span>
+
+          <span class="stat-label">
+            Asistieron
+          </span>
+
+        </article>
+
+
+        <article class="card stat-card">
+
+          <span class="stat-value">
+            {{ r.ausentes }}
+          </span>
+
+          <span class="stat-label">
+            Ausentes
+          </span>
+
+        </article>
+
+
+        <article class="card stat-card">
+
+          <span class="stat-value">
+            {{ r.tipos_entrada.length }}
+          </span>
+
+          <span class="stat-label">
+            Tipos de entrada
+          </span>
+
+        </article>
+
+      </section>
+
+
+      <!-- GESTIÓN -->
+      <section class="management-grid">
+
+
+        <!-- TIPOS DE ENTRADA -->
+        <article class="card management-card">
+
+          <header class="section-header">
+
+            <div>
+
+              <h3>
+                Tipos de entrada
+              </h3>
+
+              <p class="secondary">
+                Crea y administra las entradas
+                disponibles para este evento.
+              </p>
+
+            </div>
+
+          </header>
+
+
+          <div
+            class="notice section-message"
+            *ngIf="mensajeTipo()"
+          >
+            {{ mensajeTipo() }}
+          </div>
+
+
+          <div
+            class="error section-message"
+            *ngIf="errorTipo()"
+          >
+            {{ errorTipo() }}
+          </div>
+
+
+          <!-- CREAR ENTRADA -->
+          <div class="form-stack section-form">
+
+            <div class="field">
+
+              <label for="tipo-nombre">
+                Nombre
+              </label>
+
+              <input
+                id="tipo-nombre"
+                [(ngModel)]="nuevoTipo.nombre"
+                placeholder="Ej. General o VIP"
+              >
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="tipo-descripcion">
+                Descripción
+              </label>
+
+              <input
+                id="tipo-descripcion"
+                [(ngModel)]="nuevoTipo.descripcion"
+              >
+
+            </div>
+
+
+            <div class="form-grid">
+
+              <div class="field">
+
+                <label for="tipo-precio">
+                  Precio
+                </label>
+
+                <input
+                  id="tipo-precio"
+                  type="number"
+                  min="0"
+                  [(ngModel)]="nuevoTipo.precio"
+                >
+
+              </div>
+
+
+              <div class="field">
+
+                <label for="tipo-cupo">
+                  Cupo
+                </label>
+
+                <input
+                  id="tipo-cupo"
+                  type="number"
+                  min="1"
+                  [(ngModel)]="nuevoTipo.cupo"
+                  placeholder="Sin límite"
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="form-grid">
+
+              <div class="field">
+
+                <label for="tipo-inicio">
+                  Disponible desde
+                </label>
+
+                <input
+                  id="tipo-inicio"
+                  type="datetime-local"
+                  [(ngModel)]="nuevoTipo.inicio_disponibilidad"
+                >
+
+              </div>
+
+
+              <div class="field">
+
+                <label for="tipo-fin">
+                  Disponible hasta
+                </label>
+
+                <input
+                  id="tipo-fin"
+                  type="datetime-local"
+                  [(ngModel)]="nuevoTipo.fin_disponibilidad"
+                >
+
+              </div>
+
+            </div>
+
+
+            <div class="field">
+
+              <label for="tipo-estado">
+                Estado
+              </label>
+
+              <select
+                id="tipo-estado"
+                [(ngModel)]="nuevoTipo.estado"
+              >
+                <option value="ACTIVO">
+                  Activo
+                </option>
+
+                <option value="INACTIVO">
+                  Inactivo
+                </option>
+              </select>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="guardandoTipo()"
+              (click)="crearTipoEntrada()"
+            >
+              {{
+                guardandoTipo()
+                  ? 'Guardando...'
+                  : 'Crear tipo de entrada'
+              }}
+            </button>
+
+          </div>
+
+
+          <!-- ENTRADAS EXISTENTES -->
+          <div class="subsection-header">
+
+            <h3>
+              Entradas existentes
+            </h3>
+
+            <p class="secondary">
+              Tipos de entrada creados para este evento.
+            </p>
+
+          </div>
+
+
+          <div class="item-list">
+
+            <article
+              class="item-card"
+              *ngFor="let tipo of tipos()"
+            >
+
+              <!-- VISTA NORMAL -->
+              <ng-container
+                *ngIf="tipoEditandoId() !== tipo.id"
+              >
+
+                <div class="item-header">
+
+                  <div>
+
+                    <h4>
+                      {{ tipo.nombre }}
+                    </h4>
+
+                    <p class="secondary">
+                      {{
+                        tipo.descripcion ||
+                        'Sin descripción'
+                      }}
+                    </p>
+
+                  </div>
+
+
+                  <span
+                    class="badge"
+                    [class.green]="tipo.estado === 'ACTIVO'"
+                  >
+                    {{ tipo.estado }}
+                  </span>
+
+                </div>
+
+
+                <div class="ticket-details">
+
+                  <span>
+                    <small>Precio</small>
+
+                    <strong>
+                      {{
+                        tipo.precio |
+                        currency:'COP':'symbol-narrow':'1.0-0'
+                      }}
+                    </strong>
+                  </span>
+
+
+                  <span>
+                    <small>Cupo</small>
+
+                    <strong>
+                      {{ tipo.cupo || 'Sin límite' }}
+                    </strong>
+                  </span>
+
+                </div>
+
+
+                <div class="item-actions">
+
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    (click)="tipoEditandoId.set(tipo.id)"
+                  >
+                    Editar
+                  </button>
+
+
+                  <button
+                    type="button"
+                    class="btn btn-ghost"
+                    (click)="eliminarTipoEntrada(tipo)"
+                  >
+                    Eliminar
+                  </button>
+
+                </div>
+
+              </ng-container>
+
+
+              <!-- MODO EDICIÓN -->
+              <ng-container
+                *ngIf="tipoEditandoId() === tipo.id"
+              >
+
+                <h4 class="edit-title">
+                  Editar tipo de entrada
+                </h4>
+
+
+                <div class="form-stack">
+
+                  <div class="field">
+
+                    <label>
+                      Nombre
+                    </label>
+
+                    <input
+                      [(ngModel)]="tipo.nombre"
+                    >
+
+                  </div>
+
+
+                  <div class="field">
+
+                    <label>
+                      Descripción
+                    </label>
+
+                    <input
+                      [(ngModel)]="tipo.descripcion"
+                    >
+
+                  </div>
+
+
+                  <div class="form-grid">
+
+                    <div class="field">
+
+                      <label>
+                        Precio
+                      </label>
+
+                      <input
+                        type="number"
+                        min="0"
+                        [(ngModel)]="tipo.precio"
+                      >
+
+                    </div>
+
+
+                    <div class="field">
+
+                      <label>
+                        Cupo
+                      </label>
+
+                      <input
+                        type="number"
+                        min="1"
+                        [(ngModel)]="tipo.cupo"
+                      >
+
+                    </div>
+
+                  </div>
+
+
+                  <div class="field">
+
+                    <label>
+                      Estado
+                    </label>
+
+                    <select
+                      [(ngModel)]="tipo.estado"
+                    >
+                      <option value="ACTIVO">
+                        Activo
+                      </option>
+
+                      <option value="INACTIVO">
+                        Inactivo
+                      </option>
+                    </select>
+
+                  </div>
+
+
+                  <div class="item-actions">
+
+                    <button
+                      type="button"
+                      class="btn btn-primary"
+                      (click)="
+                        guardarTipoEntrada(tipo);
+                        tipoEditandoId.set(null)
+                      "
+                    >
+                      Guardar cambios
+                    </button>
+
+
+                    <button
+                      type="button"
+                      class="btn btn-ghost"
+                      (click)="
+                        tipoEditandoId.set(null);
+                        cargarTiposEntrada()
+                      "
+                    >
+                      Cancelar
+                    </button>
+
+                  </div>
+
+                </div>
+
+              </ng-container>
+
+            </article>
+
+
+            <div
+              class="empty compact-empty"
+              *ngIf="!tipos().length"
+            >
+              Este evento todavía no tiene
+              tipos de entrada.
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <!-- EQUIPO -->
+        <article class="card management-card">
+
+          <header class="section-header">
+
+            <div>
+
+              <h3>
+                Equipo del evento
+              </h3>
+
+              <p class="secondary">
+                Busca usuarios por correo y asígnalos
+                como STAFF u ORGANIZADOR.
+              </p>
+
+            </div>
+
+          </header>
+
+
+          <div
+            class="notice section-message"
+            *ngIf="mensajeEquipo()"
+          >
+            {{ mensajeEquipo() }}
+          </div>
+
+
+          <div
+            class="error section-message"
+            *ngIf="errorEquipo()"
+          >
+            {{ errorEquipo() }}
+          </div>
+
+
+          <div class="form-stack section-form">
+
+            <div class="field">
+
+              <label for="correo-equipo">
+                Correo del usuario
+              </label>
+
+              <input
+                id="correo-equipo"
+                type="email"
+                [(ngModel)]="correoEquipo"
+                placeholder="usuario@correo.com"
+              >
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="
+                !correoEquipo.trim() ||
+                buscandoEquipo()
+              "
+              (click)="buscarUsuarioEquipo()"
+            >
+              {{
+                buscandoEquipo()
+                  ? 'Buscando...'
+                  : 'Buscar usuario'
+              }}
+            </button>
+
+          </div>
+
+
+          <!-- USUARIO ENCONTRADO -->
+          <div
+            class="found-user"
+            *ngIf="usuarioEncontrado() as usuario"
+          >
+
+            <div class="found-user-info">
+
+              <strong>
+                {{ usuario.nombre_completo }}
+              </strong>
+
+              <span>
+                {{ usuario.correo }}
+              </span>
+
+            </div>
+
+
+            <p
+              class="secondary"
+              *ngIf="usuario.roles_evento.length"
+            >
+              Roles actuales:
+              {{ usuario.roles_evento.join(', ') }}
+            </p>
+
+
+            <div class="field">
+
+              <label for="rol-equipo">
+                Rol en el evento
+              </label>
+
+              <select
+                id="rol-equipo"
+                [(ngModel)]="rolEquipo"
+              >
+                <option value="STAFF">
+                  STAFF
+                </option>
+
+                <option value="ORGANIZADOR">
+                  ORGANIZADOR
+                </option>
+              </select>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn btn-primary"
+              [disabled]="guardandoEquipo()"
+              (click)="asignarUsuarioEquipo()"
+            >
+              {{
+                guardandoEquipo()
+                  ? 'Asignando...'
+                  : 'Asignar al equipo'
+              }}
+            </button>
+
+          </div>
+
+
+          <!-- MIEMBROS DEL EQUIPO -->
+          <div class="item-list team-list">
+
+            <article
+              class="team-member"
+              *ngFor="let miembro of equipo()"
+            >
+
+              <div class="member-info">
+
+                <strong>
+                  {{
+                    miembro.usuario_detalle.nombre_completo
+                  }}
+                </strong>
+
+                <span>
+                  {{ miembro.usuario_detalle.correo }}
+                </span>
+
+              </div>
+
+
+              <div class="member-actions">
+
+                <span
+                  class="badge"
+                  *ngIf="
+                    !esOrganizadorPrincipal(miembro)
+                  "
+                >
+                  {{ miembro.rol_codigo }}
+                </span>
+
+
+                <span
+                  class="badge green"
+                  *ngIf="
+                    esOrganizadorPrincipal(miembro)
+                  "
+                >
+                  ORGANIZADOR PRINCIPAL
+                </span>
+
+
+                <button
+                  type="button"
+                  class="btn btn-ghost"
+                  *ngIf="
+                    !esOrganizadorPrincipal(miembro)
+                  "
+                  (click)="quitarMiembroEquipo(miembro)"
+                >
+                  Quitar
+                </button>
+
+              </div>
+
+            </article>
+
+
+            <div
+              class="empty compact-empty"
+              *ngIf="!equipo().length"
+            >
+              Este evento todavía no tiene
+              miembros de equipo asignados.
+            </div>
+
+          </div>
+
+        </article>
+
+
+        <!-- ASISTENCIA -->
+        <article class="card attendance-card">
+
+          <div>
+
+            <h3>
+              Asistencia
+            </h3>
+
+            <p class="secondary">
+              Consulta los participantes y las
+              validaciones realizadas para este evento.
+            </p>
+
+          </div>
+
+
+          <a
+            class="btn btn-secondary"
+            routerLink="/asistentes"
+            [queryParams]="{
+              evento: r.evento.id
+            }"
+          >
+            Ver asistentes
+          </a>
+
+        </article>
+
+      </section>
+
+
+      <!-- REPORTE -->
+      <div class="report-action">
+
+        <a
+          class="btn btn-ghost"
+          routerLink="/reportes"
+          [queryParams]="{
+            evento: r.evento.id
+          }"
+        >
+          Ver reporte completo
+        </a>
+
+      </div>
+
+    </div>
+
+  </ng-container>
+
+
+  <!-- ESTADO INICIAL -->
+  <div
+    class="empty initial-empty"
+    *ngIf="
+      !reporte() &&
+      !cargando()
+    "
+  >
+    <h3>
+      Selecciona un evento
+    </h3>
+
+    <p>
+      Elige uno de tus eventos para abrir
+      su panel de administración.
+    </p>
+  </div>
+
+</section>

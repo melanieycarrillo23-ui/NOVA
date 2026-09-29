@@ -1,0 +1,328 @@
+<section class="create-event-page">
+
+  <!-- VOLVER -->
+  <button
+    *ngIf="mostrarVolverMisEventos"
+    type="button"
+    class="back-link"
+    (click)="volver()"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver a mis eventos
+  </button>
+
+
+  <!-- ENCABEZADO -->
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Crear evento
+      </h1>
+
+      <p class="page-subtitle">
+        Define la información principal del evento.
+        Los tipos de entrada y el equipo se gestionan después.
+      </p>
+    </div>
+
+  </header>
+
+
+  <!-- FORMULARIO -->
+  <form
+    class="event-form"
+    [formGroup]="form"
+    (ngSubmit)="crear()"
+  >
+
+    <!-- INFORMACIÓN GENERAL -->
+    <section class="card form-section">
+
+      <div class="section-header">
+
+        <div>
+          <h2>
+            Información general
+          </h2>
+
+          <p>
+            Ingresa los datos principales con los que
+            se identificará el evento.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="form-grid">
+
+        <div class="field field-full">
+
+          <label for="nombre">
+            Nombre del evento
+          </label>
+
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej. NOVA Tech 2026"
+          >
+
+          <small
+            class="field-error"
+            *ngIf="
+              form.controls.nombre.touched &&
+              form.controls.nombre.invalid
+            "
+          >
+            El nombre del evento es obligatorio.
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="modalidad">
+            Modalidad
+          </label>
+
+          <select
+            id="modalidad"
+            formControlName="modalidad"
+          >
+
+            <option value="PRESENCIAL">
+              Presencial
+            </option>
+
+            <option value="VIRTUAL">
+              Virtual
+            </option>
+
+            <option value="HIBRIDO">
+              Híbrido
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="visibilidad">
+            Visibilidad
+          </label>
+
+          <select
+            id="visibilidad"
+            formControlName="visibilidad"
+          >
+
+            <option value="PUBLICO">
+              Público
+            </option>
+
+            <option value="PRIVADO">
+              Privado
+            </option>
+
+          </select>
+
+        </div>
+
+
+        <div class="field field-full">
+
+          <label for="descripcion-corta">
+            Descripción corta
+          </label>
+
+          <input
+            id="descripcion-corta"
+            type="text"
+            formControlName="descripcion_corta"
+            placeholder="Resumen breve del evento"
+          >
+
+        </div>
+
+
+        <div class="field field-full">
+
+          <label for="descripcion">
+            Descripción
+          </label>
+
+          <textarea
+            id="descripcion"
+            rows="5"
+            formControlName="descripcion"
+            placeholder="Describe el propósito y la información principal del evento"
+          ></textarea>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FECHA Y CAPACIDAD -->
+    <section class="card form-section">
+
+      <div class="section-header">
+
+        <div>
+          <h2>
+            Fecha y capacidad
+          </h2>
+
+          <p>
+            Establece cuándo se realizará el evento
+            y cuántas personas podrá recibir.
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="form-grid">
+
+        <div class="field">
+
+          <label for="fecha-inicio">
+            Fecha y hora de inicio
+          </label>
+
+          <input
+            id="fecha-inicio"
+            type="datetime-local"
+            formControlName="fecha_hora_inicio"
+          >
+
+          <small
+            class="field-error"
+            *ngIf="
+              form.controls.fecha_hora_inicio.touched &&
+              form.controls.fecha_hora_inicio.invalid
+            "
+          >
+            La fecha de inicio es obligatoria.
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="fecha-fin">
+            Fecha y hora de finalización
+          </label>
+
+          <input
+            id="fecha-fin"
+            type="datetime-local"
+            formControlName="fecha_hora_fin"
+          >
+
+          <small
+            class="field-error"
+            *ngIf="
+              form.controls.fecha_hora_fin.touched &&
+              form.controls.fecha_hora_fin.invalid
+            "
+          >
+            La fecha de finalización es obligatoria.
+          </small>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="capacidad">
+            Capacidad
+          </label>
+
+          <input
+            id="capacidad"
+            type="number"
+            min="1"
+            formControlName="capacidad"
+          >
+
+          <span class="field-help">
+            Número máximo de participantes.
+          </span>
+
+        </div>
+
+
+        <div class="field">
+
+          <label for="estado">
+            Estado inicial
+          </label>
+
+          <select
+            id="estado"
+            formControlName="estado"
+          >
+
+            <option value="BORRADOR">
+              Borrador
+            </option>
+
+            <option value="PUBLICADO">
+              Publicado
+            </option>
+
+          </select>
+
+          <span class="field-help">
+            Puedes crearlo como borrador y publicarlo después.
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ERROR -->
+    <div
+      class="error"
+      *ngIf="error()"
+    >
+      {{ error() }}
+    </div>
+
+
+    <!-- ACCIONES -->
+    <div class="form-actions">
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="
+          form.invalid ||
+          guardando()
+        "
+      >
+        {{
+          guardando()
+            ? 'Guardando...'
+            : 'Guardar evento'
+        }}
+      </button>
+
+    </div>
+
+  </form>
+
+</section>
