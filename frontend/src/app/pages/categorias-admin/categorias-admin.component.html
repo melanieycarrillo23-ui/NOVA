@@ -1,0 +1,279 @@
+<section class="categories-admin-page">
+
+  <!-- ENCABEZADO -->
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Categorías de eventos
+      </h1>
+
+      <p class="page-subtitle">
+        Administra el catálogo general de categorías de NOVA.
+      </p>
+    </div>
+
+  </header>
+
+
+  <!-- MENSAJE -->
+  <div
+    class="notice"
+    *ngIf="mensaje()"
+  >
+    {{ mensaje() }}
+  </div>
+
+
+  <!-- ERROR -->
+  <div
+    class="error"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <!-- NUEVA CATEGORÍA -->
+  <section class="card create-category-card">
+
+    <div class="section-header">
+
+      <div>
+        <h2>
+          Nueva categoría
+        </h2>
+
+        <p>
+          Crea una categoría que pueda utilizarse
+          al registrar nuevos eventos.
+        </p>
+      </div>
+
+    </div>
+
+
+    <div class="create-category-form">
+
+      <div class="field">
+
+        <label for="nuevo-nombre">
+          Nombre
+        </label>
+
+        <input
+          id="nuevo-nombre"
+          type="text"
+          [(ngModel)]="nuevoNombre"
+          placeholder="Ej. Tecnología"
+        >
+
+      </div>
+
+
+      <div class="field">
+
+        <label for="nueva-descripcion">
+          Descripción
+        </label>
+
+        <textarea
+          id="nueva-descripcion"
+          rows="3"
+          [(ngModel)]="nuevaDescripcion"
+          placeholder="Descripción de la categoría"
+        ></textarea>
+
+      </div>
+
+
+      <div class="create-actions">
+
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="
+            !nuevoNombre.trim() ||
+            guardando()
+          "
+          (click)="crear()"
+        >
+          {{
+            guardando()
+              ? 'Guardando...'
+              : 'Crear categoría'
+          }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- CARGANDO -->
+  <div
+    class="empty loading-state"
+    *ngIf="cargando()"
+  >
+    Cargando categorías...
+  </div>
+
+
+  <!-- CATEGORÍAS -->
+  <section
+    class="categories-section"
+    *ngIf="!cargando()"
+  >
+
+    <header
+      class="categories-header"
+      *ngIf="items().length"
+    >
+
+      <div>
+        <h2>
+          Categorías registradas
+        </h2>
+
+        <p>
+          Puedes editar o eliminar las categorías existentes.
+        </p>
+      </div>
+
+
+      <span class="categories-count">
+        {{ items().length }}
+        {{
+          items().length === 1
+            ? 'categoría'
+            : 'categorías'
+        }}
+      </span>
+
+    </header>
+
+
+    <div
+      class="categories-grid"
+      *ngIf="items().length"
+    >
+
+      <article
+        class="card category-card"
+        *ngFor="let categoria of items()"
+      >
+
+        <div class="category-card-header">
+
+          <span class="badge">
+            Categoría
+          </span>
+
+          <span class="category-id">
+            #{{ categoria.id }}
+          </span>
+
+        </div>
+
+
+        <div class="category-form">
+
+          <div class="field">
+
+            <label
+              [for]="'nombre-categoria-' + categoria.id"
+            >
+              Nombre
+            </label>
+
+            <input
+              [id]="'nombre-categoria-' + categoria.id"
+              type="text"
+              [(ngModel)]="categoria.nombre"
+              [disabled]="
+                procesandoId() === categoria.id
+              "
+            >
+
+          </div>
+
+
+          <div class="field">
+
+            <label
+              [for]="'descripcion-categoria-' + categoria.id"
+            >
+              Descripción
+            </label>
+
+            <textarea
+              [id]="'descripcion-categoria-' + categoria.id"
+              rows="3"
+              [(ngModel)]="categoria.descripcion"
+              [disabled]="
+                procesandoId() === categoria.id
+              "
+            ></textarea>
+
+          </div>
+
+
+          <div class="category-actions">
+
+            <button
+              type="button"
+              class="btn btn-secondary"
+              [disabled]="
+                procesandoId() !== null
+              "
+              (click)="guardar(categoria)"
+            >
+              {{
+                procesandoId() === categoria.id
+                  ? 'Procesando...'
+                  : 'Guardar cambios'
+              }}
+            </button>
+
+
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [disabled]="
+                procesandoId() !== null
+              "
+              (click)="eliminar(categoria)"
+            >
+              Eliminar
+            </button>
+
+          </div>
+
+        </div>
+
+      </article>
+
+    </div>
+
+
+    <!-- SIN CATEGORÍAS -->
+    <div
+      class="empty empty-categories"
+      *ngIf="!items().length"
+    >
+
+      <h3>
+        No hay categorías registradas
+      </h3>
+
+      <p>
+        Crea la primera categoría usando el formulario superior.
+      </p>
+
+    </div>
+
+  </section>
+
+</section>

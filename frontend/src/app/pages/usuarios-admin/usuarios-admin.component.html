@@ -1,0 +1,239 @@
+<section class="users-admin-page">
+
+  <!-- ENCABEZADO -->
+  <header class="page-header">
+
+    <div>
+      <h1 class="page-title">
+        Usuarios
+      </h1>
+
+      <p class="page-subtitle">
+        Administra las cuentas registradas en NOVA.
+      </p>
+    </div>
+
+
+    <!-- BUSCADOR -->
+    <div class="search-box">
+
+      <label
+        for="buscar-usuario"
+        class="search-label"
+      >
+        Buscar usuario
+      </label>
+
+      <input
+        id="buscar-usuario"
+        type="text"
+        [(ngModel)]="busqueda"
+        placeholder="Buscar por nombre o correo"
+      >
+
+    </div>
+
+  </header>
+
+
+  <!-- MENSAJE -->
+  <div
+    class="notice"
+    *ngIf="mensaje()"
+  >
+    {{ mensaje() }}
+  </div>
+
+
+  <!-- ERROR -->
+  <div
+    class="error"
+    *ngIf="error()"
+  >
+    {{ error() }}
+  </div>
+
+
+  <!-- CARGANDO -->
+  <div
+    class="empty loading-state"
+    *ngIf="cargando()"
+  >
+    Cargando usuarios...
+  </div>
+
+
+  <!-- TABLA -->
+  <section
+    class="card users-card"
+    *ngIf="!cargando()"
+  >
+
+    <div class="table-wrap">
+
+      <table
+        class="table users-table"
+        *ngIf="usuariosFiltrados().length"
+      >
+
+        <thead>
+
+          <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Roles</th>
+            <th>Estado</th>
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="
+              let usuario of usuariosFiltrados()
+            "
+          >
+
+            <!-- USUARIO -->
+            <td>
+
+              <div class="user-cell">
+
+                <div class="user-avatar">
+                  {{
+                    (usuario.nombre_completo || '?')
+                      .charAt(0)
+                      .toUpperCase()
+                  }}
+                </div>
+
+
+                <div class="user-information">
+
+                  <strong>
+                    {{ usuario.nombre_completo }}
+                  </strong>
+
+                  <span
+                    class="current-account"
+                    *ngIf="esCuentaActual(usuario)"
+                  >
+                    Tu cuenta
+                  </span>
+
+                </div>
+
+              </div>
+
+            </td>
+
+
+            <!-- CORREO -->
+            <td>
+
+              <span class="user-email">
+                {{ usuario.correo }}
+              </span>
+
+            </td>
+
+
+            <!-- ROLES -->
+            <td>
+
+              <div class="roles-list">
+
+                <span
+                  class="badge role-badge"
+                  *ngFor="let rol of usuario.roles"
+                >
+                  {{ rol }}
+                </span>
+
+              </div>
+
+            </td>
+
+
+            <!-- ESTADO -->
+            <td>
+
+              <div class="status-control">
+
+                <select
+                  [ngModel]="usuario.estado"
+                  [disabled]="
+                    esCuentaActual(usuario) ||
+                    procesandoId() === usuario.id
+                  "
+                  (ngModelChange)="
+                    cambiarEstado(
+                      usuario,
+                      $event
+                    )
+                  "
+                >
+
+                  <option value="ACTIVO">
+                    Activo
+                  </option>
+
+                  <option value="BLOQUEADO">
+                    Bloqueado
+                  </option>
+
+                  <option value="INACTIVO">
+                    Inactivo
+                  </option>
+
+                </select>
+
+
+                <span
+                  class="processing-text"
+                  *ngIf="
+                    procesandoId() === usuario.id
+                  "
+                >
+                  Actualizando...
+                </span>
+
+              </div>
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- SIN RESULTADOS -->
+    <div
+      class="empty empty-users"
+      *ngIf="!usuariosFiltrados().length"
+    >
+
+      <h3>
+        No encontramos usuarios
+      </h3>
+
+      <p *ngIf="busqueda">
+        No hay coincidencias para
+        “{{ busqueda }}”.
+      </p>
+
+      <p *ngIf="!busqueda">
+        Todavía no hay usuarios registrados.
+      </p>
+
+    </div>
+
+  </section>
+
+</section>

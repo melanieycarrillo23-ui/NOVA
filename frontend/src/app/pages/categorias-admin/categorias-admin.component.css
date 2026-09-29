@@ -1,0 +1,280 @@
+.categories-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+
+/* ENCABEZADO */
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+
+/* CREAR CATEGORÍA */
+
+.create-category-card {
+  padding: 22px;
+}
+
+.section-header {
+  margin-bottom: 20px;
+}
+
+.section-header h2 {
+  margin: 0;
+
+  font-size: 1rem;
+}
+
+.section-header p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
+.create-category-form {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1.5fr)
+    auto;
+
+  align-items: end;
+
+  gap: 16px;
+}
+
+.create-actions {
+  display: flex;
+  align-items: flex-end;
+}
+
+
+/* CAMPOS */
+
+.field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.field label {
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+}
+
+.field textarea {
+  min-height: 88px;
+
+  resize: vertical;
+}
+
+
+/* LISTADO */
+
+.categories-section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+.categories-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+.categories-header h2 {
+  margin: 0;
+
+  font-size: 1rem;
+}
+
+.categories-header p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 0.74rem;
+}
+
+.categories-count {
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
+/* GRID */
+
+.categories-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 16px;
+}
+
+.category-card {
+  padding: 20px;
+}
+
+.category-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.category-id {
+  color: var(--muted);
+
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+
+/* FORMULARIO DE CADA CATEGORÍA */
+
+.category-form {
+  display: flex;
+  flex-direction: column;
+
+  gap: 15px;
+}
+
+.category-actions {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 9px;
+
+  margin-top: 2px;
+}
+
+.category-actions .btn {
+  flex: 1;
+
+  min-width: 130px;
+}
+
+
+/* ESTADOS */
+
+.loading-state {
+  min-height: 180px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-categories {
+  min-height: 220px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+
+  text-align: center;
+}
+
+.empty-categories h3,
+.empty-categories p {
+  margin: 0;
+}
+
+.empty-categories p {
+  color: var(--muted);
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1100px) {
+
+  .categories-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .create-category-form {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .create-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+
+@media (max-width: 750px) {
+
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .create-category-form {
+    grid-template-columns: 1fr;
+  }
+
+  .create-actions {
+    grid-column: auto;
+  }
+
+  .create-actions .btn {
+    width: 100%;
+  }
+
+  .categories-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+@media (max-width: 520px) {
+
+  .create-category-card,
+  .category-card {
+    padding: 18px;
+  }
+
+  .category-actions {
+    flex-direction: column;
+  }
+
+  .category-actions .btn {
+    width: 100%;
+  }
+}

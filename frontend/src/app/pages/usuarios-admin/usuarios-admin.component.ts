@@ -11,6 +11,7 @@ import { Usuario } from '../../models/models';
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
 
+
 @Component({
   selector: 'app-usuarios-admin',
   standalone: true,
@@ -18,145 +19,17 @@ import { EventosService } from '../../services/eventos.service';
     CommonModule,
     FormsModule
   ],
-  template: `
-    <div class="row between wrap">
-
-      <div>
-        <h1 class="page-title">
-          Usuarios
-        </h1>
-
-        <p class="page-subtitle">
-          Administra las cuentas registradas en NOVA.
-        </p>
-      </div>
-
-      <div style="width: min(340px, 100%)">
-        <input
-          [(ngModel)]="busqueda"
-          placeholder="Buscar por nombre o correo"
-        >
-      </div>
-
-    </div>
-
-    <div
-      class="notice"
-      *ngIf="mensaje()"
-      style="margin-bottom: 16px"
-    >
-      {{ mensaje() }}
-    </div>
-
-    <div
-      class="error"
-      *ngIf="error()"
-      style="margin-bottom: 16px"
-    >
-      {{ error() }}
-    </div>
-
-    <div class="card table-wrap">
-
-      <table class="table">
-
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Correo</th>
-            <th>Roles</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          <tr
-            *ngFor="let usuario of usuariosFiltrados()"
-          >
-
-            <td>
-
-              <strong>
-                {{ usuario.nombre_completo }}
-              </strong>
-
-              <div
-                class="muted"
-                *ngIf="esCuentaActual(usuario)"
-              >
-                Tu cuenta
-              </div>
-
-            </td>
-
-            <td>
-              {{ usuario.correo }}
-            </td>
-
-            <td>
-
-              <span
-                class="badge"
-                *ngFor="let rol of usuario.roles"
-                style="margin-right: 5px"
-              >
-                {{ rol }}
-              </span>
-
-            </td>
-
-            <td>
-
-              <select
-                [ngModel]="usuario.estado"
-                [disabled]="
-                  esCuentaActual(usuario) ||
-                  procesandoId() === usuario.id
-                "
-                (ngModelChange)="
-                  cambiarEstado(usuario, $event)
-                "
-              >
-
-                <option value="ACTIVO">
-                  Activo
-                </option>
-
-                <option value="BLOQUEADO">
-                  Bloqueado
-                </option>
-
-                <option value="INACTIVO">
-                  Inactivo
-                </option>
-
-              </select>
-
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
-
-      <div
-        class="empty"
-        *ngIf="!usuariosFiltrados().length"
-      >
-        No encontramos usuarios con ese criterio.
-      </div>
-
-    </div>
-  `
+  templateUrl: './usuarios-admin.component.html',
+  styleUrl: './usuarios-admin.component.css'
 })
 export class UsuariosAdminComponent implements OnInit {
 
-  api = inject(EventosService);
-  auth = inject(AuthService);
+  private readonly api = inject(EventosService);
+  private readonly auth = inject(AuthService);
 
   items = signal<Usuario[]>([]);
+
+  cargando = signal(true);
 
   procesandoId =
     signal<number | null>(null);
@@ -166,11 +39,17 @@ export class UsuariosAdminComponent implements OnInit {
 
   busqueda = '';
 
+
   ngOnInit(): void {
+
     this.cargar();
   }
 
+
   cargar(): void {
+
+    this.cargando.set(true);
+    this.error.set('');
 
     this.api.usuarios().subscribe({
 
@@ -179,16 +58,23 @@ export class UsuariosAdminComponent implements OnInit {
         this.items.set(
           respuesta.results
         );
+
+        this.cargando.set(false);
       },
 
       error: () => {
 
+        this.items.set([]);
+
         this.error.set(
           'No fue posible cargar los usuarios.'
         );
+
+        this.cargando.set(false);
       }
     });
   }
+
 
   usuariosFiltrados(): Usuario[] {
 
@@ -213,6 +99,7 @@ export class UsuariosAdminComponent implements OnInit {
     );
   }
 
+
   esCuentaActual(
     usuario: Usuario
   ): boolean {
@@ -222,6 +109,7 @@ export class UsuariosAdminComponent implements OnInit {
       usuario.id
     );
   }
+
 
   cambiarEstado(
     usuario: Usuario,
