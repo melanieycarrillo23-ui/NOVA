@@ -1,16 +1,7 @@
-import {
-  HttpClient,
-  HttpParams
-} from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { inject, Injectable } from '@angular/core';
 
-import {
-  inject,
-  Injectable
-} from '@angular/core';
-
-import {
-  environment
-} from '../../environments/environment';
+import { environment } from '../../environments/environment';
 
 import {
   CategoriaEvento,
@@ -37,8 +28,22 @@ interface Paginated<T> {
 interface CodigoValidacionEntrada {
   entrada_id: number;
   codigo_publico: string;
-  token_qr: string;
   estado: string;
+}
+
+
+export interface ErrorImportacion {
+  fila: number;
+  correo?: string;
+  detalle: string;
+}
+
+
+export interface ResultadoImportacion {
+  detail: string;
+  importados: number;
+  omitidos: number;
+  errores: ErrorImportacion[];
 }
 
 
@@ -47,15 +52,11 @@ interface CodigoValidacionEntrada {
 })
 export class EventosService {
 
-  private readonly http =
-    inject(HttpClient);
-
-  private readonly api =
-    environment.apiUrl;
+  private readonly http = inject(HttpClient);
+  private readonly api = environment.apiUrl;
 
 
   listarCategorias() {
-
     return this.http.get<
       Paginated<CategoriaEvento>
     >(
@@ -70,10 +71,7 @@ export class EventosService {
       descripcion?: string;
     }
   ) {
-
-    return this.http.post<
-      CategoriaEvento
-    >(
+    return this.http.post<CategoriaEvento>(
       `${this.api}/categorias/`,
       data
     );
@@ -84,10 +82,7 @@ export class EventosService {
     id: number,
     data: Partial<CategoriaEvento>
   ) {
-
-    return this.http.patch<
-      CategoriaEvento
-    >(
+    return this.http.patch<CategoriaEvento>(
       `${this.api}/categorias/${id}/`,
       data
     );
@@ -97,19 +92,48 @@ export class EventosService {
   eliminarCategoria(
     id: number
   ) {
-
     return this.http.delete(
       `${this.api}/categorias/${id}/`
     );
   }
 
 
-  listarEventos() {
+  listarEventos(
+    pagina = 1,
+    busqueda = '',
+    modalidad = ''
+  ) {
+
+    let params =
+      new HttpParams().set(
+        'page',
+        pagina
+      );
+
+    const texto =
+      busqueda.trim();
+
+    if (texto) {
+      params = params.set(
+        'search',
+        texto
+      );
+    }
+
+    if (modalidad) {
+      params = params.set(
+        'modalidad',
+        modalidad
+      );
+    }
 
     return this.http.get<
       Paginated<Evento>
     >(
-      `${this.api}/eventos/`
+      `${this.api}/eventos/`,
+      {
+        params
+      }
     );
   }
 
@@ -117,7 +141,6 @@ export class EventosService {
   verEvento(
     id: number
   ) {
-
     return this.http.get<Evento>(
       `${this.api}/eventos/${id}/`
     );
@@ -127,7 +150,6 @@ export class EventosService {
   crearEvento(
     data: Partial<Evento>
   ) {
-
     return this.http.post<Evento>(
       `${this.api}/eventos/`,
       data
@@ -136,7 +158,6 @@ export class EventosService {
 
 
   misEventos() {
-
     return this.http.get<Evento[]>(
       `${this.api}/eventos/mios/`
     );
@@ -144,7 +165,6 @@ export class EventosService {
 
 
   eventosAsignados() {
-
     return this.http.get<Evento[]>(
       `${this.api}/eventos/asignados/`
     );
@@ -155,7 +175,6 @@ export class EventosService {
     id: number,
     data: Partial<Evento>
   ) {
-
     return this.http.patch<Evento>(
       `${this.api}/eventos/${id}/`,
       data
@@ -166,7 +185,6 @@ export class EventosService {
   tiposEntrada(
     evento?: number
   ) {
-
     const params =
       evento
         ? new HttpParams().set(
@@ -189,10 +207,7 @@ export class EventosService {
   crearTipoEntrada(
     data: Partial<TipoEntrada>
   ) {
-
-    return this.http.post<
-      TipoEntrada
-    >(
+    return this.http.post<TipoEntrada>(
       `${this.api}/tipos-entrada/`,
       data
     );
@@ -203,10 +218,7 @@ export class EventosService {
     id: number,
     data: Partial<TipoEntrada>
   ) {
-
-    return this.http.patch<
-      TipoEntrada
-    >(
+    return this.http.patch<TipoEntrada>(
       `${this.api}/tipos-entrada/${id}/`,
       data
     );
@@ -216,7 +228,6 @@ export class EventosService {
   eliminarTipoEntrada(
     id: number
   ) {
-
     return this.http.delete(
       `${this.api}/tipos-entrada/${id}/`
     );
@@ -227,7 +238,6 @@ export class EventosService {
     eventoId: number,
     tipoEntradaId: number
   ) {
-
     return this.http.post<Entrada>(
       `${this.api}/eventos/${eventoId}/inscribirse/`,
       {
@@ -239,10 +249,7 @@ export class EventosService {
 
 
   misInscripciones() {
-
-    return this.http.get<
-      Inscripcion[]
-    >(
+    return this.http.get<Inscripcion[]>(
       `${this.api}/inscripciones/mias/`
     );
   }
@@ -251,7 +258,6 @@ export class EventosService {
   cancelarInscripcion(
     id: number
   ) {
-
     return this.http.post<{
       detail: string;
       inscripcion_id: number;
@@ -264,10 +270,7 @@ export class EventosService {
 
 
   misEntradas() {
-
-    return this.http.get<
-      Entrada[]
-    >(
+    return this.http.get<Entrada[]>(
       `${this.api}/entradas/mias/`
     );
   }
@@ -276,7 +279,6 @@ export class EventosService {
   qrBlob(
     entradaId: number
   ) {
-
     return this.http.get(
       `${this.api}/entradas/${entradaId}/qr/`,
       {
@@ -289,7 +291,6 @@ export class EventosService {
   codigoValidacion(
     entradaId: number
   ) {
-
     return this.http.get<
       CodigoValidacionEntrada
     >(
@@ -299,13 +300,75 @@ export class EventosService {
 
 
   asistentes(
-    eventoId: number
+    eventoId: number,
+    pagina = 1,
+    busqueda = '',
+    estado = ''
   ) {
 
+    let params =
+      new HttpParams().set(
+        'page',
+        pagina
+      );
+
+    const texto =
+      busqueda.trim();
+
+    if (texto) {
+      params = params.set(
+        'search',
+        texto
+      );
+    }
+
+    if (estado) {
+      params = params.set(
+        'estado',
+        estado
+      );
+    }
+
     return this.http.get<
-      Inscripcion[]
+      Paginated<Inscripcion>
     >(
-      `${this.api}/eventos/${eventoId}/asistentes/`
+      `${this.api}/eventos/${eventoId}/asistentes/`,
+      {
+        params
+      }
+    );
+  }
+
+
+  exportarAsistentes(
+    eventoId: number
+  ) {
+    return this.http.get(
+      `${this.api}/eventos/${eventoId}/exportar-asistentes/`,
+      {
+        responseType: 'blob'
+      }
+    );
+  }
+
+
+  importarAsistentes(
+    eventoId: number,
+    archivo: File
+  ) {
+    const formData =
+      new FormData();
+
+    formData.append(
+      'archivo',
+      archivo
+    );
+
+    return this.http.post<
+      ResultadoImportacion
+    >(
+      `${this.api}/eventos/${eventoId}/importar-asistentes/`,
+      formData
     );
   }
 
@@ -313,7 +376,6 @@ export class EventosService {
   reporte(
     eventoId: number
   ) {
-
     return this.http.get<
       ReporteEvento
     >(
@@ -326,7 +388,6 @@ export class EventosService {
     eventoId: number,
     token_qr: string
   ) {
-
     return this.http.post<any>(
       `${this.api}/validaciones/escanear/`,
       {
@@ -337,12 +398,41 @@ export class EventosService {
   }
 
 
-  usuarios() {
+  usuarios(
+    pagina = 1,
+    busqueda = '',
+    estado = ''
+  ) {
+    let params =
+      new HttpParams().set(
+        'page',
+        pagina
+      );
+
+    const texto =
+      busqueda.trim();
+
+    if (texto) {
+      params = params.set(
+        'search',
+        texto
+      );
+    }
+
+    if (estado) {
+      params = params.set(
+        'estado',
+        estado
+      );
+    }
 
     return this.http.get<
       Paginated<Usuario>
     >(
-      `${this.api}/usuarios/`
+      `${this.api}/usuarios/`,
+      {
+        params
+      }
     );
   }
 
@@ -354,7 +444,6 @@ export class EventosService {
       | 'BLOQUEADO'
       | 'INACTIVO'
   ) {
-
     return this.http.patch<Usuario>(
       `${this.api}/usuarios/${id}/estado/`,
       {
@@ -368,7 +457,6 @@ export class EventosService {
     eventoId: number,
     correo: string
   ) {
-
     const params =
       new HttpParams().set(
         'correo',
@@ -391,7 +479,6 @@ export class EventosService {
     correo: string,
     rol: RolEquipoCodigo
   ) {
-
     return this.http.post<
       MiembroEquipoEvento
     >(
@@ -407,7 +494,6 @@ export class EventosService {
   equipoEvento(
     eventoId: number
   ) {
-
     const params =
       new HttpParams().set(
         'evento',
@@ -428,7 +514,6 @@ export class EventosService {
   eliminarMiembroEquipo(
     id: number
   ) {
-
     return this.http.delete(
       `${this.api}/equipo-eventos/${id}/`
     );

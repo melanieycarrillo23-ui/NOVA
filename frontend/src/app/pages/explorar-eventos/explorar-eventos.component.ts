@@ -1,16 +1,11 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  computed,
-  inject,
-  OnInit,
-  signal
-} from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 
 import { Evento } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
+
 
 @Component({
   selector: 'app-explorar-eventos',
@@ -25,59 +20,102 @@ import { EventosService } from '../../services/eventos.service';
 })
 export class ExplorarEventosComponent implements OnInit {
 
-  private readonly api = inject(EventosService);
+  private readonly api =
+    inject(EventosService);
 
-  eventos = signal<Evento[]>([]);
-  busqueda = signal('');
 
-  cargando = signal(true);
-  error = signal('');
+  eventos =
+    signal<Evento[]>([]);
 
-  filtrados = computed(() => {
-    const termino = this.normalizar(
-      this.busqueda()
-    );
+  cargando =
+    signal(true);
 
-    const eventosOrdenados = [...this.eventos()]
-      .sort(
-        (a, b) =>
-          new Date(
-            a.fecha_hora_inicio
-          ).getTime() -
-          new Date(
-            b.fecha_hora_inicio
-          ).getTime()
-      );
+  error =
+    signal('');
 
-    if (!termino) {
-      return eventosOrdenados;
-    }
 
-    return eventosOrdenados.filter(evento => {
-      const valores = [
-        evento.nombre,
-        evento.categoria_nombre,
-        evento.lugar_nombre,
-        evento.modalidad
-      ];
+  total =
+    signal(0);
 
-      return valores.some(valor =>
-        this.normalizar(
-          valor ?? ''
-        ).includes(termino)
-      );
-    });
-  });
+  pagina =
+    signal(1);
+
+  tieneAnterior =
+    signal(false);
+
+  tieneSiguiente =
+    signal(false);
+
+
+  busqueda = '';
+
+  modalidad = '';
+
 
   ngOnInit(): void {
+
     this.cargarEventos();
   }
 
-  actualizarBusqueda(valor: string): void {
-    this.busqueda.set(valor);
+
+  aplicarFiltros(): void {
+
+    this.pagina.set(1);
+
+    this.cargarEventos();
   }
 
-  formatearFecha(fecha: string): string {
+
+  limpiarFiltros(): void {
+
+    this.busqueda = '';
+
+    this.modalidad = '';
+
+    this.pagina.set(1);
+
+    this.cargarEventos();
+  }
+
+
+  paginaAnterior(): void {
+
+    if (
+      !this.tieneAnterior() ||
+      this.cargando()
+    ) {
+      return;
+    }
+
+    this.pagina.update(
+      valor => valor - 1
+    );
+
+    this.cargarEventos();
+  }
+
+
+  paginaSiguiente(): void {
+
+    if (
+      !this.tieneSiguiente() ||
+      this.cargando()
+    ) {
+      return;
+    }
+
+    this.pagina.update(
+      valor => valor + 1
+    );
+
+    this.cargarEventos();
+  }
+
+
+  formatearFecha(
+    fecha: string
+  ): string {
+
     return new Intl.DateTimeFormat(
       'es-CO',
       {
@@ -87,33 +125,75 @@ export class ExplorarEventosComponent implements OnInit {
         hour: 'numeric',
         minute: '2-digit'
       }
-    ).format(new Date(fecha));
+    ).format(
+      new Date(fecha)
+    );
   }
+
 
   private cargarEventos(): void {
+
     this.cargando.set(true);
+
     this.error.set('');
 
-    this.api.listarEventos().subscribe({
-      next: respuesta => {
-        this.eventos.set(respuesta.results);
-        this.cargando.set(false);
-      },
-      error: () => {
-        this.eventos.set([]);
-        this.error.set(
-          'No fue posible cargar los eventos.'
-        );
-        this.cargando.set(false);
-      }
-    });
-  }
 
-  private normalizar(valor: string): string {
-    return valor
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .trim();
+    this.api
+      .listarEventos(
+        this.pagina(),
+        this.busqueda,
+        this.modalidad
+      )
+      .subscribe({
+
+        next: respuesta => {
+
+          if (
+            !respuesta.results.length &&
+            this.pagina() > 1
+          ) {
+
+            this.pagina.update(
+              valor => valor - 1
+            );
+
+            this.cargarEventos();
+
+            return;
+          }
+
+          this.eventos.set(
+            respuesta.results
+          );
+
+          this.total.set(
+            respuesta.count
+          );
+
+          this.tieneAnterior.set(
+            !!respuesta.previous
+          );
+
+          this.tieneSiguiente.set(
+            !!respuesta.next
+          );
+
+          this.cargando.set(false);
+        },
+
+        error: respuesta => {
+
+          this.eventos.set([]);
+
+          this.total.set(0);
+
+          this.error.set(
+            respuesta?.error?.detail ||
+            'No fue posible cargar los eventos.'
+          );
+
+          this.cargando.set(false);
+        }
+      });
   }
 }

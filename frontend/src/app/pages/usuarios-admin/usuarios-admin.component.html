@@ -1,9 +1,9 @@
 <section class="users-admin-page">
 
-  <!-- ENCABEZADO -->
   <header class="page-header">
 
     <div>
+
       <h1 class="page-title">
         Usuarios
       </h1>
@@ -11,50 +11,123 @@
       <p class="page-subtitle">
         Administra las cuentas registradas en NOVA.
       </p>
-    </div>
-
-
-    <!-- BUSCADOR -->
-    <div class="search-box">
-
-      <label
-        for="buscar-usuario"
-        class="search-label"
-      >
-        Buscar usuario
-      </label>
-
-      <input
-        id="buscar-usuario"
-        type="text"
-        [(ngModel)]="busqueda"
-        placeholder="Buscar por nombre o correo"
-      >
 
     </div>
 
   </header>
 
 
-  <!-- MENSAJE -->
+  <section
+    class="card"
+    style="margin-bottom: 18px"
+  >
+
+    <div class="row wrap">
+
+      <div
+        class="field"
+        style="
+          flex: 1;
+          min-width: 240px;
+        "
+      >
+
+        <label for="buscar-usuario">
+          Buscar usuario
+        </label>
+
+        <input
+          id="buscar-usuario"
+          type="text"
+          [(ngModel)]="busqueda"
+          placeholder="Nombre o correo"
+          (keyup.enter)="aplicarFiltros()"
+        >
+
+      </div>
+
+
+      <div
+        class="field"
+        style="
+          min-width: 190px;
+        "
+      >
+
+        <label for="estado-usuario">
+          Estado
+        </label>
+
+        <select
+          id="estado-usuario"
+          [(ngModel)]="estadoFiltro"
+        >
+
+          <option value="">
+            Todos
+          </option>
+
+          <option value="ACTIVO">
+            Activos
+          </option>
+
+          <option value="BLOQUEADO">
+            Bloqueados
+          </option>
+
+          <option value="INACTIVO">
+            Inactivos
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        style="align-self: end"
+        [disabled]="cargando()"
+        (click)="aplicarFiltros()"
+      >
+        Buscar
+      </button>
+
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        style="align-self: end"
+        [disabled]="cargando()"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar
+      </button>
+
+    </div>
+
+  </section>
+
+
   <div
     class="notice"
     *ngIf="mensaje()"
+    style="margin-bottom: 16px"
   >
     {{ mensaje() }}
   </div>
 
 
-  <!-- ERROR -->
   <div
     class="error"
     *ngIf="error()"
+    style="margin-bottom: 16px"
   >
     {{ error() }}
   </div>
 
 
-  <!-- CARGANDO -->
   <div
     class="empty loading-state"
     *ngIf="cargando()"
@@ -63,17 +136,54 @@
   </div>
 
 
-  <!-- TABLA -->
   <section
     class="card users-card"
     *ngIf="!cargando()"
   >
 
+    <div
+      class="row between wrap"
+      style="
+        margin-bottom: 16px;
+        gap: 12px;
+      "
+    >
+
+      <div>
+
+        <strong>
+          {{ total() }}
+        </strong>
+
+        <span class="secondary">
+          {{
+            total() === 1
+              ? 'usuario encontrado'
+              : 'usuarios encontrados'
+          }}
+        </span>
+
+      </div>
+
+
+      <span
+        class="secondary"
+        *ngIf="total()"
+      >
+        Página
+        {{ pagina() }}
+        de
+        {{ totalPaginas() }}
+      </span>
+
+    </div>
+
+
     <div class="table-wrap">
 
       <table
         class="table users-table"
-        *ngIf="usuariosFiltrados().length"
+        *ngIf="items().length"
       >
 
         <thead>
@@ -92,21 +202,25 @@
 
           <tr
             *ngFor="
-              let usuario of usuariosFiltrados()
+              let usuario of items()
             "
           >
 
-            <!-- USUARIO -->
             <td>
 
               <div class="user-cell">
 
                 <div class="user-avatar">
+
                   {{
-                    (usuario.nombre_completo || '?')
-                      .charAt(0)
-                      .toUpperCase()
+                    (
+                      usuario.nombre_completo ||
+                      '?'
+                    )
+                    .charAt(0)
+                    .toUpperCase()
                   }}
+
                 </div>
 
 
@@ -118,7 +232,9 @@
 
                   <span
                     class="current-account"
-                    *ngIf="esCuentaActual(usuario)"
+                    *ngIf="
+                      esCuentaActual(usuario)
+                    "
                   >
                     Tu cuenta
                   </span>
@@ -130,7 +246,6 @@
             </td>
 
 
-            <!-- CORREO -->
             <td>
 
               <span class="user-email">
@@ -140,14 +255,15 @@
             </td>
 
 
-            <!-- ROLES -->
             <td>
 
               <div class="roles-list">
 
                 <span
                   class="badge role-badge"
-                  *ngFor="let rol of usuario.roles"
+                  *ngFor="
+                    let rol of usuario.roles
+                  "
                 >
                   {{ rol }}
                 </span>
@@ -157,7 +273,6 @@
             </td>
 
 
-            <!-- ESTADO -->
             <td>
 
               <div class="status-control">
@@ -194,7 +309,8 @@
                 <span
                   class="processing-text"
                   *ngIf="
-                    procesandoId() === usuario.id
+                    procesandoId() ===
+                    usuario.id
                   "
                 >
                   Actualizando...
@@ -213,24 +329,78 @@
     </div>
 
 
-    <!-- SIN RESULTADOS -->
     <div
       class="empty empty-users"
-      *ngIf="!usuariosFiltrados().length"
+      *ngIf="!items().length"
     >
 
       <h3>
         No encontramos usuarios
       </h3>
 
-      <p *ngIf="busqueda">
-        No hay coincidencias para
-        “{{ busqueda }}”.
+      <p
+        *ngIf="
+          busqueda ||
+          estadoFiltro
+        "
+      >
+        No hay usuarios que coincidan
+        con los filtros seleccionados.
       </p>
 
-      <p *ngIf="!busqueda">
-        Todavía no hay usuarios registrados.
+      <p
+        *ngIf="
+          !busqueda &&
+          !estadoFiltro
+        "
+      >
+        No hay usuarios registrados.
       </p>
+
+    </div>
+
+
+    <div
+      class="row between wrap"
+      style="
+        margin-top: 18px;
+        gap: 12px;
+      "
+      *ngIf="total() > 0"
+    >
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        [disabled]="
+          !tieneAnterior() ||
+          cargando()
+        "
+        (click)="paginaAnterior()"
+      >
+        Anterior
+      </button>
+
+
+      <span class="secondary">
+        Página
+        {{ pagina() }}
+        de
+        {{ totalPaginas() }}
+      </span>
+
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        [disabled]="
+          !tieneSiguiente() ||
+          cargando()
+        "
+        (click)="paginaSiguiente()"
+      >
+        Siguiente
+      </button>
 
     </div>
 

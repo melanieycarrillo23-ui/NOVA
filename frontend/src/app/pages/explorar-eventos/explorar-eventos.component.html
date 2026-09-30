@@ -4,44 +4,139 @@
 
     <div class="title-area">
 
+      <a
+        routerLink="/dashboard"
+        aria-label="Volver al inicio"
+        title="Volver al inicio"
+        class="back-button"
+      >
+        &larr;
+      </a>
+
+
       <div>
+
         <h1 class="page-title">
           Explorar eventos
         </h1>
 
         <p class="page-subtitle">
-          Encuentra experiencias disponibles en NOVA.
+          Encuentra experiencias disponibles
+          en NOVA.
         </p>
+
       </div>
-
-    </div>
-
-
-    <div class="search-box">
-
-      <input
-        type="search"
-        [ngModel]="busqueda()"
-        (ngModelChange)="actualizarBusqueda($event)"
-        placeholder="Buscar por nombre, categoría o lugar"
-        aria-label="Buscar eventos"
-      >
 
     </div>
 
   </header>
 
 
+  <section class="card">
+
+    <div class="row wrap">
+
+      <div
+        class="field"
+        style="
+          flex: 1;
+          min-width: 250px;
+        "
+      >
+
+        <label for="buscar-evento">
+          Buscar evento
+        </label>
+
+        <input
+          id="buscar-evento"
+          type="search"
+          [(ngModel)]="busqueda"
+          placeholder="Nombre, categoría o lugar"
+          (keyup.enter)="aplicarFiltros()"
+        >
+
+      </div>
+
+
+      <div
+        class="field"
+        style="
+          min-width: 200px;
+        "
+      >
+
+        <label for="modalidad-evento">
+          Modalidad
+        </label>
+
+        <select
+          id="modalidad-evento"
+          [(ngModel)]="modalidad"
+        >
+
+          <option value="">
+            Todas
+          </option>
+
+          <option value="PRESENCIAL">
+            Presencial
+          </option>
+
+          <option value="VIRTUAL">
+            Virtual
+          </option>
+
+          <option value="HIBRIDO">
+            Híbrido
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn btn-primary"
+        style="align-self: end"
+        [disabled]="cargando()"
+        (click)="aplicarFiltros()"
+      >
+        Buscar
+      </button>
+
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        style="align-self: end"
+        [disabled]="cargando()"
+        (click)="limpiarFiltros()"
+      >
+        Limpiar
+      </button>
+
+    </div>
+
+  </section>
+
+
   <div
     class="results-info"
-    *ngIf="!cargando() && !error()"
+    *ngIf="
+      !cargando() &&
+      !error()
+    "
   >
-    <span>
-      {{
-        filtrados().length === 1
-          ? '1 evento encontrado'
-          : filtrados().length + ' eventos encontrados'
-      }}
+    {{
+      total() === 1
+        ? '1 evento encontrado'
+        : total() + ' eventos encontrados'
+    }}
+
+    <span *ngIf="total()">
+      · Página {{ pagina() }}
     </span>
   </div>
 
@@ -67,20 +162,20 @@
     *ngIf="
       !cargando() &&
       !error() &&
-      filtrados().length
+      eventos().length
     "
   >
 
     <a
+      *ngFor="let evento of eventos()"
       class="card event-card"
-        *ngFor="let evento of filtrados()"
-        [routerLink]="[
-            '/eventos',
-            evento.id
-        ]"
-        [queryParams]="{
-            origen: 'eventos'
-        }"
+      [routerLink]="[
+        '/eventos',
+        evento.id
+      ]"
+      [queryParams]="{
+        origen: 'eventos'
+      }"
     >
 
       <div class="event-card-top">
@@ -153,13 +248,15 @@
 
 
       <div class="event-footer">
+
         <span>
           Ver evento
         </span>
 
         <span aria-hidden="true">
-          →
+          &rarr;
         </span>
+
       </div>
 
     </a>
@@ -172,10 +269,50 @@
     *ngIf="
       !cargando() &&
       !error() &&
-      !filtrados().length
+      !eventos().length
     "
   >
     No encontramos eventos con ese criterio.
+  </div>
+
+
+  <div
+    class="row between wrap"
+    style="
+      margin-top: 4px;
+      gap: 12px;
+    "
+    *ngIf="
+      !cargando() &&
+      !error() &&
+      total() > 0
+    "
+  >
+
+    <button
+      type="button"
+      class="btn btn-ghost"
+      [disabled]="!tieneAnterior()"
+      (click)="paginaAnterior()"
+    >
+      Anterior
+    </button>
+
+
+    <span class="secondary">
+      Página {{ pagina() }}
+    </span>
+
+
+    <button
+      type="button"
+      class="btn btn-secondary"
+      [disabled]="!tieneSiguiente()"
+      (click)="paginaSiguiente()"
+    >
+      Siguiente
+    </button>
+
   </div>
 
 </section>
