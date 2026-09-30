@@ -1,0 +1,403 @@
+<main class="login-page">
+
+  <section class="login-layout">
+
+    <!-- =========================
+         PANEL IZQUIERDO
+         ========================= -->
+    <div class="login-visual">
+        <img
+            class="login-visual-image"
+            src="/login-side.png"
+            alt="Evento NOVA"
+        >
+
+        <div class="login-visual-overlay"></div>
+
+
+        <!-- CONTENIDO SUPERIOR -->
+        <div class="visual-main-content">
+
+            <div class="visual-logo">
+            NOV<span>A</span>
+            </div>
+
+            <h2 class="visual-title">
+            Cada evento
+            <br>
+            es un momento
+            <br>
+            <span>que brilla.</span>
+            </h2>
+
+            <div class="visual-line"></div>
+
+            <p class="visual-description">
+            Descubre, organiza y vive experiencias
+            <br>
+            inolvidables junto a personas que
+            <br>
+            comparten tus mismos intereses.
+            </p>
+
+        </div>
+
+
+        <!-- INFORMACIÓN INFERIOR -->
+        <div class="visual-features">
+
+            <!-- ENCUENTRA -->
+            <div class="visual-feature">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <rect
+                x="3"
+                y="5"
+                width="18"
+                height="16"
+                rx="2"
+                ></rect>
+
+                <path d="M16 3v4"></path>
+                <path d="M8 3v4"></path>
+                <path d="M3 10h18"></path>
+            </svg>
+
+            <div>
+                <strong>Encuentra</strong>
+                <span>eventos increíbles</span>
+            </div>
+
+            </div>
+
+
+            <!-- CONECTA -->
+            <div class="visual-feature">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <circle
+                cx="9"
+                cy="7"
+                r="4"
+                ></circle>
+
+                <path
+                d="M2 21v-2a6 6 0 0 1 6-6h2"
+                ></path>
+
+                <circle
+                cx="17"
+                cy="11"
+                r="3"
+                ></circle>
+
+                <path
+                d="M14 21v-1a4 4 0 0 1 4-4h1"
+                ></path>
+            </svg>
+
+            <div>
+                <strong>Conecta</strong>
+                <span>con más personas</span>
+            </div>
+
+            </div>
+
+
+            <!-- VIVE -->
+            <div class="visual-feature">
+
+            <svg
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+            >
+                <path
+                d="m12 2 3 6 6.5 1-4.7 4.6
+                1.1 6.4-5.9-3.1L6.1 20
+                l1.1-6.4L2.5 9 9 8 12 2Z"
+                ></path>
+            </svg>
+
+            <div>
+                <strong>Vive</strong>
+                <span>nuevas experiencias</span>
+            </div>
+
+            </div>
+
+        </div>
+
+        </div>
+
+    <!-- =========================
+         PANEL DERECHO
+         ========================= -->
+    <div class="login-panel">
+
+      <div class="login-card">
+
+        <p class="login-kicker">
+          BIENVENIDO DE NUEVO
+        </p>
+
+        <h1 class="login-title">
+          Inicia sesión en
+          <span>NOVA</span>
+        </h1>
+
+        <p class="login-subtitle">
+          Accede a tu cuenta para gestionar,
+          descubrir y vivir tus eventos.
+        </p>
+
+
+        <!-- =========================
+             FORMULARIO
+             ========================= -->
+        <form
+          class="login-form"
+          [formGroup]="form"
+          (ngSubmit)="entrar()"
+          autocomplete="off"
+          novalidate
+        >
+
+          <!-- CORREO -->
+          <div class="field-group">
+
+            <label for="correo">
+              Correo electrónico
+            </label>
+
+            <div
+              class="input-box"
+              [class.invalid]="campoInvalido('correo')"
+            >
+
+              <svg
+                class="field-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z"></path>
+                <path d="m4 7 8 6 8-6"></path>
+              </svg>
+
+              <input
+                id="correo"
+                type="email"
+                formControlName="correo"
+                placeholder="tucorreo@ejemplo.com"
+                autocomplete="off"
+              >
+
+            </div>
+
+            <small
+              class="field-error"
+              *ngIf="
+                form.controls.correo.touched &&
+                form.controls.correo.hasError('required')
+              "
+            >
+              El correo es obligatorio.
+            </small>
+
+            <small
+              class="field-error"
+              *ngIf="
+                form.controls.correo.touched &&
+                form.controls.correo.hasError('email')
+              "
+            >
+              Ingresa un correo válido.
+            </small>
+
+          </div>
+
+
+          <!-- CONTRASEÑA -->
+          <div class="field-group">
+
+            <label for="password">
+              Contraseña
+            </label>
+
+            <div
+              class="input-box"
+              [class.invalid]="campoInvalido('password')"
+            >
+
+              <svg
+                class="field-icon"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <rect
+                  x="5"
+                  y="10"
+                  width="14"
+                  height="10"
+                  rx="2"
+                ></rect>
+
+                <path
+                  d="M8 10V7a4 4 0 0 1 8 0v3"
+                ></path>
+              </svg>
+
+              <input
+                id="password"
+                [type]="mostrarPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="Tu contraseña"
+                autocomplete="new-password"
+              >
+
+
+              <!-- OJITO -->
+              <button
+                type="button"
+                class="password-toggle"
+                (click)="alternarPassword()"
+                [attr.aria-label]="
+                  mostrarPassword()
+                    ? 'Ocultar contraseña'
+                    : 'Mostrar contraseña'
+                "
+              >
+
+                <!-- OJO NORMAL -->
+                <svg
+                  *ngIf="!mostrarPassword()"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"
+                  ></path>
+
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="3"
+                  ></circle>
+                </svg>
+
+
+                <!-- OJO CERRADO -->
+                <svg
+                  *ngIf="mostrarPassword()"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path d="m3 3 18 18"></path>
+
+                  <path
+                    d="M10.6 10.6a2 2 0 0 0 2.8 2.8"
+                  ></path>
+
+                  <path
+                    d="M9.8 5.2A10 10 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3 3.8"
+                  ></path>
+
+                  <path
+                    d="M6.5 6.5C3.7 8.3 2 12 2 12s3.5 7 10 7a10 10 0 0 0 4-.8"
+                  ></path>
+                </svg>
+
+              </button>
+
+            </div>
+
+            <small
+              class="field-error"
+              *ngIf="
+                form.controls.password.touched &&
+                form.controls.password.hasError('required')
+              "
+            >
+              La contraseña es obligatoria.
+            </small>
+
+          </div>
+
+
+          <!-- ERROR DEL LOGIN -->
+          <div
+            class="login-error"
+            *ngIf="error()"
+          >
+            {{ error() }}
+          </div>
+
+
+          <!-- BOTÓN -->
+          <button
+            class="login-button"
+            type="submit"
+            [disabled]="cargando() || form.invalid"
+          >
+
+            <span>
+              {{
+                cargando()
+                  ? 'Ingresando...'
+                  : 'Iniciar sesión'
+              }}
+            </span>
+
+            <svg
+              *ngIf="!cargando()"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M5 12h14"></path>
+              <path d="m13 6 6 6-6 6"></path>
+            </svg>
+
+          </button>
+
+        </form>
+
+
+        <!-- SEPARADOR -->
+        <div class="divider">
+          <span></span>
+          <p>o</p>
+          <span></span>
+        </div>
+
+
+        <!-- REGISTRO -->
+        <a
+          routerLink="/registro"
+          class="register-box"
+        >
+          <span>
+            ¿No tienes cuenta?
+          </span>
+
+          <strong>
+            Crear cuenta
+          </strong>
+        </a>
+
+
+        <p class="login-footer">
+          NOVA · Cada evento es un momento que brilla.
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
