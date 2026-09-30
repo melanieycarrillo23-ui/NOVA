@@ -29,9 +29,12 @@ PERMISOS = {
 
 ASIGNACIONES = {
     'ADMIN': list(PERMISOS.keys()),
-    'ORGANIZADOR': ['eventos.ver', 'eventos.crear', 'eventos.editar_propios', 'equipo.gestionar', 'inscripciones.ver_evento', 'reportes.ver_evento'],
-    'STAFF': ['eventos.ver', 'inscripciones.ver_evento', 'entradas.validar'],
-    'USUARIO': ['eventos.ver', 'inscripciones.crear', 'entradas.ver_propias'],
+
+    'ORGANIZADOR': [ 'eventos.ver', 'eventos.crear', 'eventos.editar_propios', 'equipo.gestionar', 'inscripciones.ver_evento', 'entradas.validar', 'reportes.ver_evento', ],
+
+    'STAFF': [ 'eventos.ver', 'inscripciones.ver_evento', 'entradas.validar', ],
+
+    'USUARIO': [ 'eventos.ver', 'inscripciones.crear', 'entradas.ver_propias', ],
 }
 
 

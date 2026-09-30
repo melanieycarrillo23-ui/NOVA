@@ -1,6 +1,5 @@
 <section class="validation-page">
 
-  <!-- VOLVER -->
   <button
     *ngIf="mostrarVolverEventosAsignados()"
     type="button"
@@ -12,7 +11,6 @@
   </button>
 
 
-  <!-- ENCABEZADO -->
   <header class="page-header">
 
     <div>
@@ -22,8 +20,8 @@
       </h1>
 
       <p class="page-subtitle">
-        Verifica las entradas QR de los participantes
-        del evento.
+        Verifica el código de validación
+        proporcionado por el participante.
       </p>
 
     </div>
@@ -31,7 +29,6 @@
   </header>
 
 
-  <!-- ERROR AL CARGAR EVENTOS -->
   <div
     class="error"
     *ngIf="errorEventos()"
@@ -40,24 +37,21 @@
   </div>
 
 
-  <!-- CONTENIDO -->
-  <div class="validation-grid">
+  <div class="validation-layout">
 
-
-    <!-- FORMULARIO -->
     <section class="card validation-card">
 
       <div class="card-header">
 
         <div>
 
-          <h3>
+          <h2>
             Validar entrada
-          </h3>
+          </h2>
 
-          <p class="secondary">
-            Selecciona el evento e introduce
-            el contenido del código QR.
+          <p>
+            Selecciona el evento y pega
+            el código de validación de la entrada.
           </p>
 
         </div>
@@ -101,15 +95,20 @@
         <div class="field">
 
           <label for="token-qr">
-            Código QR
+            Código de validación
           </label>
 
           <textarea
             id="token-qr"
-            rows="5"
+            rows="6"
             formControlName="token_qr"
-            placeholder="Pega aquí el contenido de la entrada QR"
+            placeholder="Pega aquí el código de validación de la entrada"
           ></textarea>
+
+          <small>
+            El participante puede copiar este código
+            desde la sección Mis entradas.
+          </small>
 
         </div>
 
@@ -147,7 +146,6 @@
     </section>
 
 
-    <!-- RESULTADO -->
     <article class="card result-card">
 
       <ng-container
@@ -157,8 +155,6 @@
         "
       >
 
-
-        <!-- ENTRADA VÁLIDA -->
         <div
           class="validation-result result-valid"
           *ngIf="esValido()"
@@ -187,7 +183,6 @@
         </div>
 
 
-        <!-- ENTRADA NO VÁLIDA -->
         <div
           class="validation-result result-invalid"
           *ngIf="!esValido()"
@@ -216,7 +211,6 @@
         </div>
 
 
-        <!-- PARTICIPANTE -->
         <div
           class="participant-data"
           *ngIf="resultado.participante"
@@ -235,7 +229,6 @@
       </ng-container>
 
 
-      <!-- SIN VALIDACIÓN -->
       <ng-template #esperando>
 
         <div class="waiting-result">
@@ -249,8 +242,8 @@
           </strong>
 
           <p>
-            Selecciona un evento e introduce
-            el contenido de una entrada QR.
+            Selecciona el evento y pega
+            el código de validación del participante.
           </p>
 
         </div>

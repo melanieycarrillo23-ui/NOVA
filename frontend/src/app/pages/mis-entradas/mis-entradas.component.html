@@ -8,8 +8,8 @@
       </h1>
 
       <p class="page-subtitle">
-        Consulta tus entradas y códigos QR
-        de acceso a los eventos.
+        Consulta tus entradas y presenta tu código
+        para ingresar al evento.
       </p>
     </div>
 
@@ -42,7 +42,10 @@
 
     <article
       class="card ticket-card"
-      *ngFor="let entrada of entradasOrdenadas()"
+      *ngFor="
+        let entrada
+        of entradasOrdenadas()
+      "
       [class.ticket-inactive]="
         entrada.estado !== 'ACTIVA'
       "
@@ -57,10 +60,16 @@
         <span
           class="ticket-status"
           [ngClass]="
-            claseEstado(entrada.estado)
+            claseEstado(
+              entrada.estado
+            )
           "
         >
-          {{ textoEstado(entrada.estado) }}
+          {{
+            textoEstado(
+              entrada.estado
+            )
+          }}
         </span>
 
       </div>
@@ -74,6 +83,7 @@
 
         <p>
           Entrada emitida el
+
           <strong>
             {{
               formatearFecha(
@@ -102,8 +112,9 @@
           </strong>
 
           <span>
-            Muestra el código QR al personal
-            encargado cuando llegues al evento.
+            Presenta el código QR o el código
+            de entrada al personal encargado
+            del evento.
           </span>
 
         </div>
@@ -113,50 +124,94 @@
           type="button"
           class="btn btn-primary"
           *ngIf="
-            !qrUrls[entrada.id]
+            !qrUrls[entrada.id] ||
+            !codigosPublicos[entrada.id]
           "
           [disabled]="
             cargandoId() === entrada.id
           "
-          (click)="cargarQr(entrada.id)"
+          (click)="
+            cargarAcceso(
+              entrada.id
+            )
+          "
         >
           {{
             cargandoId() === entrada.id
-              ? 'Cargando QR...'
-              : 'Mostrar código QR'
+              ? 'Cargando entrada...'
+              : 'Mostrar entrada'
           }}
         </button>
 
 
         <div
-          class="qr-container"
+          class="access-container"
           *ngIf="
-            qrUrls[entrada.id]
+            qrUrls[entrada.id] &&
+            codigosPublicos[entrada.id]
           "
         >
 
-          <div class="qr-box">
+          <!-- CÓDIGO QR -->
 
-            <img
-              [src]="qrUrls[entrada.id]"
-              alt="Código QR de entrada"
-            >
+          <div class="qr-container">
+
+            <div class="qr-box">
+
+              <img
+                [src]="
+                  qrUrls[
+                    entrada.id
+                  ]
+                "
+                alt="Código QR de entrada"
+              >
+
+            </div>
+
+            <span>
+              Código QR de la entrada
+            </span>
 
           </div>
 
-          <span>
-            Presenta este código para ingresar.
-          </span>
+
+          <!-- CÓDIGO PÚBLICO -->
+
+          <div class="public-code">
+
+            <span class="public-code-label">
+              Código de entrada
+            </span>
+
+            <strong class="public-code-value">
+              {{
+                codigosPublicos[
+                  entrada.id
+                ]
+              }}
+            </strong>
+
+            <small>
+              Este código es único para esta entrada.
+              Muéstralo al personal STAFF para validar
+              tu ingreso.
+            </small>
+
+          </div>
 
         </div>
 
       </div>
 
 
-      <!-- UTILIZADA -->
+      <!-- ENTRADA UTILIZADA -->
 
       <div
-        class="ticket-message used-message"
+        class="
+          ticket-message
+          used-message
+        "
         *ngIf="
           entrada.estado === 'UTILIZADA'
         "
@@ -174,10 +229,13 @@
       </div>
 
 
-      <!-- CANCELADA -->
+      <!-- ENTRADA CANCELADA -->
 
       <div
-        class="ticket-message cancelled-message"
+        class="
+          ticket-message
+          cancelled-message
+        "
         *ngIf="
           entrada.estado === 'CANCELADA'
         "
@@ -195,15 +253,49 @@
       </div>
 
 
+      <!-- ENTRADA EXPIRADA -->
+
+      <div
+        class="
+          ticket-message
+          expired-message
+        "
+        *ngIf="
+          entrada.estado === 'EXPIRADA'
+        "
+      >
+
+        <strong>
+          Entrada expirada
+        </strong>
+
+        <span>
+          Esta entrada ya no se encuentra
+          disponible para validación.
+        </span>
+
+      </div>
+
+
+      <!-- ERROR -->
+
       <div
         class="error qr-error"
         *ngIf="
-          erroresQr[entrada.id]
+          erroresAcceso[
+            entrada.id
+          ]
         "
       >
-        {{ erroresQr[entrada.id] }}
+        {{
+          erroresAcceso[
+            entrada.id
+          ]
+        }}
       </div>
 
+
+      <!-- PIE -->
 
       <footer class="ticket-footer">
 
@@ -216,7 +308,7 @@
         >
           Ver evento
           <span aria-hidden="true">
-            →
+            &rarr;
           </span>
         </a>
 
@@ -226,6 +318,8 @@
 
   </div>
 
+
+  <!-- SIN ENTRADAS -->
 
   <div
     class="empty empty-tickets"

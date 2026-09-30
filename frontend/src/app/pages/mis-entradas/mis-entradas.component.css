@@ -11,18 +11,16 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-
   gap: 20px;
 }
 
 
-/* ENTRADAS */
+/* LISTA DE ENTRADAS */
 
 .tickets-grid {
   display: grid;
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
-
   gap: 18px;
 }
 
@@ -31,7 +29,6 @@
 
   display: flex;
   flex-direction: column;
-
   gap: 20px;
 
   transition:
@@ -44,13 +41,12 @@
 }
 
 
-/* CABECERA */
+/* CABECERA DE LA ENTRADA */
 
 .ticket-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   gap: 12px;
 }
 
@@ -86,7 +82,12 @@
     rgba(34, 211, 238, 0.1);
 
   border:
-    1px solid rgba(34, 211, 238, 0.2);
+    1px solid rgba(
+      34,
+      211,
+      238,
+      0.2
+    );
 }
 
 .status-used {
@@ -96,7 +97,12 @@
     rgba(139, 92, 246, 0.1);
 
   border:
-    1px solid rgba(139, 92, 246, 0.2);
+    1px solid rgba(
+      139,
+      92,
+      246,
+      0.2
+    );
 }
 
 .status-cancelled {
@@ -106,7 +112,27 @@
     rgba(248, 113, 113, 0.08);
 
   border:
-    1px solid rgba(248, 113, 113, 0.18);
+    1px solid rgba(
+      248,
+      113,
+      113,
+      0.18
+    );
+}
+
+.status-expired {
+  color: #fcd34d;
+
+  background:
+    rgba(245, 158, 11, 0.08);
+
+  border:
+    1px solid rgba(
+      245,
+      158,
+      11,
+      0.18
+    );
 }
 
 .status-neutral {
@@ -120,7 +146,7 @@
 }
 
 
-/* INFORMACIÓN */
+/* INFORMACIÓN PRINCIPAL */
 
 .ticket-main h2 {
   margin: 0;
@@ -146,14 +172,12 @@
 .active-ticket {
   display: flex;
   flex-direction: column;
-
   gap: 16px;
 }
 
 .access-message {
   display: flex;
   flex-direction: column;
-
   gap: 5px;
 }
 
@@ -169,6 +193,15 @@
 }
 
 
+/* ACCESO */
+
+.access-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
 /* QR */
 
 .qr-container {
@@ -180,7 +213,9 @@
 
   padding: 18px;
 
-  border: 1px solid var(--border);
+  border:
+    1px solid var(--border);
+
   border-radius: 14px;
 
   background:
@@ -218,12 +253,86 @@
 }
 
 
+/* CÓDIGO PÚBLICO DE ENTRADA */
+
+.public-code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 18px;
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 255, 255, 0.025);
+
+  text-align: center;
+}
+
+.public-code-label {
+  color: var(--muted);
+
+  font-size: 0.7rem;
+  font-weight: 700;
+
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.public-code-value {
+  display: block;
+
+  max-width: 100%;
+
+  padding: 10px 14px;
+
+  border:
+    1px solid rgba(
+      34,
+      211,
+      238,
+      0.22
+    );
+
+  border-radius: 10px;
+
+  background:
+    rgba(34, 211, 238, 0.06);
+
+  color: #67e8f9;
+
+  font-size: 1rem;
+  font-weight: 800;
+
+  letter-spacing: 0.08em;
+
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  user-select: text;
+}
+
+.public-code small {
+  max-width: 430px;
+
+  color: var(--muted);
+
+  font-size: 0.7rem;
+  line-height: 1.5;
+}
+
+
 /* MENSAJES DE ESTADO */
 
 .ticket-message {
   display: flex;
   flex-direction: column;
-
   gap: 5px;
 
   padding: 14px;
@@ -240,24 +349,40 @@
   line-height: 1.45;
 }
 
+
+/* UTILIZADA */
+
 .used-message {
   background:
     rgba(139, 92, 246, 0.07);
 
   border:
-    1px solid rgba(139, 92, 246, 0.16);
+    1px solid rgba(
+      139,
+      92,
+      246,
+      0.16
+    );
 }
 
 .used-message span {
   color: var(--muted);
 }
 
+
+/* CANCELADA */
+
 .cancelled-message {
   background:
     rgba(248, 113, 113, 0.06);
 
   border:
-    1px solid rgba(248, 113, 113, 0.15);
+    1px solid rgba(
+      248,
+      113,
+      113,
+      0.15
+    );
 }
 
 .cancelled-message strong {
@@ -269,14 +394,38 @@
 }
 
 
-/* ERROR QR */
+/* EXPIRADA */
+
+.expired-message {
+  background:
+    rgba(245, 158, 11, 0.06);
+
+  border:
+    1px solid rgba(
+      245,
+      158,
+      11,
+      0.16
+    );
+}
+
+.expired-message strong {
+  color: #fcd34d;
+}
+
+.expired-message span {
+  color: var(--muted);
+}
+
+
+/* ERROR */
 
 .qr-error {
   margin: 0;
 }
 
 
-/* PIE */
+/* PIE DE LA ENTRADA */
 
 .ticket-footer {
   margin-top: auto;
@@ -290,7 +439,6 @@
 .event-link {
   display: inline-flex;
   align-items: center;
-
   gap: 7px;
 
   color: #67e8f9;
@@ -342,6 +490,7 @@
   }
 }
 
+
 @media (max-width: 600px) {
 
   .ticket-header {
@@ -349,12 +498,22 @@
     flex-direction: column;
   }
 
-  .active-ticket .btn {
+  .active-ticket > .btn {
     width: 100%;
   }
 
   .qr-box {
     width: 170px;
     height: 170px;
+  }
+
+  .public-code {
+    align-items: stretch;
+  }
+
+  .public-code-value,
+  .public-code-label,
+  .public-code small {
+    text-align: center;
   }
 }

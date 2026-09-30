@@ -6,9 +6,10 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
 from .models import Usuario
-from .permissions import EsAdministrador
+from .permissions import PuedeGestionarUsuarios
 from .serializers import (NovaTokenObtainPairSerializer,RegistroUsuarioSerializer,UsuarioSerializer,CerrarSesionSerializer,CambiarEstadoUsuarioSerializer)
 from rest_framework.decorators import action
+from apps.auditoria.services import registrar_actividad
 
 class NovaTokenObtainPairView(TokenObtainPairView):
     serializer_class = NovaTokenObtainPairSerializer
@@ -61,7 +62,7 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
     ).all()
 
     serializer_class = UsuarioSerializer
-    permission_classes = [EsAdministrador]
+    permission_classes = [PuedeGestionarUsuarios]
 
     @action(
         detail=True,
@@ -99,6 +100,17 @@ class UsuarioViewSet(viewsets.ReadOnlyModelViewSet):
                 'estado',
                 'actualizado_en'
             ]
+        )
+        registrar_actividad(
+            usuario=request.user,
+            accion='USUARIO_ESTADO_CAMBIADO',
+            tipo_entidad='Usuario',
+            entidad_id=usuario.id,
+            metadatos={
+                'nuevo_estado': nuevo_estado,
+                'correo': usuario.correo
+            },
+            request=request
         )
 
         return Response(

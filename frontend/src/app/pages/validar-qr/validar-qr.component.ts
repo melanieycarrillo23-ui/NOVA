@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+
 import {
   Component,
   inject,
@@ -227,8 +228,6 @@ export class ValidarQrComponent implements OnInit {
     this.cargandoEventos.set(true);
     this.errorEventos.set('');
 
-
-    // ADMIN puede operar cualquier evento.
     if (this.auth.tieneRol('ADMIN')) {
 
       this.api.listarEventos().subscribe({
@@ -250,8 +249,6 @@ export class ValidarQrComponent implements OnInit {
     }
 
 
-    // ORGANIZADOR:
-    // eventos propios + eventos asignados.
     if (
       this.auth.tieneRol(
         'ORGANIZADOR'
@@ -301,7 +298,6 @@ export class ValidarQrComponent implements OnInit {
     }
 
 
-    // STAFF.
     this.api
       .eventosAsignados()
       .subscribe({
