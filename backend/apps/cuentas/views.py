@@ -134,52 +134,11 @@ class UsuarioViewSet(
 
     def get_queryset(self):
         qs = (
-            Evento.objects
-            .select_related(
-                'categoria',
-                'lugar',
-                'creado_por',
+            Usuario.objects
+            .prefetch_related(
+                'asignaciones_roles__rol'
             )
         )
-
-        usuario = self.request.user
-
-        if (
-            usuario.is_authenticated
-            and es_admin(usuario)
-        ):
-            qs_visible = qs
-
-        elif self.action in (
-            'list',
-            'retrieve',
-        ):
-            publico = Q(
-                estado=Evento.Estado.PUBLICADO,
-                visibilidad=Evento.Visibilidad.PUBLICO,
-            )
-
-            if usuario.is_authenticated:
-                qs_visible = qs.filter(
-                    publico
-                    |
-                    Q(
-                        creado_por=usuario
-                    )
-                    |
-                    Q(
-                        equipo__usuario=usuario
-                    )
-                ).distinct()
-
-            else:
-                qs_visible = qs.filter(
-                    publico
-                )
-
-        else:
-            qs_visible = qs
-
 
         if self.action == 'list':
 
@@ -193,11 +152,11 @@ class UsuarioViewSet(
                 .strip()
             )
 
-            modalidad = (
+            estado = (
                 self.request
                 .query_params
                 .get(
-                    'modalidad',
+                    'estado',
                     ''
                 )
                 .strip()
@@ -205,54 +164,39 @@ class UsuarioViewSet(
             )
 
             if busqueda:
-                qs_visible = qs_visible.filter(
+                qs = qs.filter(
                     Q(
-                        nombre__icontains=
+                        nombre_completo__icontains=
                             busqueda
                     )
                     |
                     Q(
-                        categoria__nombre__icontains=
-                            busqueda
-                    )
-                    |
-                    Q(
-                        lugar__nombre__icontains=
-                            busqueda
-                    )
-                    |
-                    Q(
-                        lugar__ciudad__icontains=
-                            busqueda
-                    )
-                    |
-                    Q(
-                        descripcion_corta__icontains=
+                        correo__icontains=
                             busqueda
                     )
                 )
 
-            modalidades_validas = {
-                Evento.Modalidad.PRESENCIAL,
-                Evento.Modalidad.VIRTUAL,
-                Evento.Modalidad.HIBRIDO,
+            estados_validos = {
+                Usuario.Estado.ACTIVO,
+                Usuario.Estado.BLOQUEADO,
+                Usuario.Estado.INACTIVO,
             }
 
-            if (
-                modalidad
-                in modalidades_validas
-            ):
-                qs_visible = qs_visible.filter(
-                    modalidad=modalidad
+            if estado in estados_validos:
+                qs = qs.filter(
+                    estado=estado
                 )
 
-            qs_visible = qs_visible.order_by(
-                'fecha_hora_inicio',
-                'id'
-            )
+        return qs.order_by(
+            'nombre_completo',
+            'id'
+        )
 
-        return qs_visible
-
+    @action(
+        detail=True,
+        methods=['patch'],
+        url_path='estado'
+    )
     def cambiar_estado(
         self,
         request,

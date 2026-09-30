@@ -316,39 +316,130 @@ class EventoViewSet(
 
         usuario = self.request.user
 
+        # -------------------------------------------------
+        # VISIBILIDAD DE LOS EVENTOS
+        # -------------------------------------------------
+
         if (
             usuario.is_authenticated
             and es_admin(usuario)
         ):
-            return qs
+            qs_visible = qs
 
-        if self.action in (
+        elif self.action in (
             'list',
             'retrieve',
         ):
             publico = Q(
-                estado=
-                    Evento.Estado.PUBLICADO,
-                visibilidad=
-                    Evento.Visibilidad.PUBLICO,
+                estado=Evento.Estado.PUBLICADO,
+                visibilidad=Evento.Visibilidad.PUBLICO,
             )
 
             if usuario.is_authenticated:
-                return qs.filter(
-                    publico
-                    | Q(
-                        creado_por=usuario
+                qs_visible = (
+                    qs.filter(
+                        publico
+                        | Q(
+                            creado_por=usuario
+                        )
+                        | Q(
+                            equipo__usuario=usuario
+                        )
                     )
-                    | Q(
-                        equipo__usuario=usuario
-                    )
-                ).distinct()
+                    .distinct()
+                )
 
-            return qs.filter(
-                publico
+            else:
+                qs_visible = qs.filter(
+                    publico
+                )
+
+        else:
+            qs_visible = qs
+
+
+        # -------------------------------------------------
+        # FILTROS PARA EXPLORAR EVENTOS
+        # -------------------------------------------------
+
+        if self.action == 'list':
+
+            busqueda = (
+                self.request
+                .query_params
+                .get(
+                    'search',
+                    ''
+                )
+                .strip()
             )
 
-        return qs
+            modalidad = (
+                self.request
+                .query_params
+                .get(
+                    'modalidad',
+                    ''
+                )
+                .strip()
+                .upper()
+            )
+
+
+            # Búsqueda por texto
+            if busqueda:
+                qs_visible = qs_visible.filter(
+                    Q(
+                        nombre__icontains=
+                            busqueda
+                    )
+                    |
+                    Q(
+                        descripcion_corta__icontains=
+                            busqueda
+                    )
+                    |
+                    Q(
+                        categoria__nombre__icontains=
+                            busqueda
+                    )
+                    |
+                    Q(
+                        lugar__nombre__icontains=
+                            busqueda
+                    )
+                    |
+                    Q(
+                        lugar__ciudad__icontains=
+                            busqueda
+                    )
+                )
+
+
+            # Filtro por modalidad
+            modalidades_validas = {
+                Evento.Modalidad.PRESENCIAL,
+                Evento.Modalidad.VIRTUAL,
+                Evento.Modalidad.HIBRIDO,
+            }
+
+            if modalidad in modalidades_validas:
+                qs_visible = qs_visible.filter(
+                    modalidad=modalidad
+                )
+
+
+            return (
+                qs_visible
+                .distinct()
+                .order_by(
+                    'fecha_hora_inicio',
+                    'id'
+                )
+            )
+
+
+        return qs_visible
 
     def get_permissions(self):
         if self.action in (
@@ -1303,6 +1394,12 @@ class EventoViewSet(
                 qs,
                 many=True
             ).data
+    )
+
+    @action(
+        detail=True,
+        methods=['get'],
+        url_path='exportar-asistentes'
     )
     
     def exportar_asistentes(
