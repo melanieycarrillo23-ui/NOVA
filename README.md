@@ -1,45 +1,44 @@
 # NOVA — Sistema de eventos con entradas QR
 
-NOVA es una plataforma web para la gestión de eventos, inscripciones, entradas QR, validación de entradas, control de asistencia y generación de reportes.
+NOVA es una plataforma web para crear y administrar eventos, gestionar inscripciones, generar entradas QR y registrar la asistencia de los participantes.
 
-El sistema incorpora autenticación, roles, permisos, auditoría, filtros, paginación, importación y exportación de asistentes.
+Incluye autenticación, control de acceso mediante roles y permisos, gestión de equipos por evento, reportes y auditoría de acciones.
 
 ## Stack tecnológico
 
-- Frontend: Angular 18
-- Backend: Django REST Framework
-- Base de datos: PostgreSQL 17
-- Autenticación: JWT + Refresh Token
-- Generación y validación de QR
-- Documentación de API: Swagger / OpenAPI
-- Servidor frontend: Nginx
-- Contenedores: Docker Compose
+- Frontend: Angular 18.
+- Backend: Django REST Framework.
+- Base de datos: PostgreSQL 17.
+- Autenticación: JWT con access token y refresh token.
+- Documentación de API: Swagger / OpenAPI.
+- Servidor frontend: Nginx.
+- Contenedores: Docker Compose.
 
 ## Roles
 
-NOVA utiliza cuatro roles globales:
+El sistema utiliza cuatro roles globales:
 
-- ADMIN: administra la plataforma y sus usuarios.
-- ORGANIZADOR: crea y administra eventos.
-- STAFF: participa en la operación de eventos asignados.
-- USUARIO: explora eventos, realiza inscripciones y consulta sus entradas.
+| Rol | Función |
+| --- | --- |
+| ADMIN | Administra la plataforma y sus usuarios. |
+| ORGANIZADOR | Crea y administra eventos. |
+| STAFF | Participa en la operación de los eventos asignados. |
+| USUARIO | Explora eventos, realiza inscripciones y consulta sus entradas. |
 
-Una misma cuenta puede tener varios roles.
+Una cuenta puede tener varios roles. Además, cada evento puede contar con un equipo cuyos integrantes tengan funciones de ORGANIZADOR o STAFF.
 
-Además, cada evento puede tener miembros de equipo con funciones específicas de ORGANIZADOR o STAFF.
+El acceso a las acciones depende de los permisos del usuario y de su relación con el evento.
 
-## Funcionalidades principales
+## Funcionalidades
 
-### Autenticación
+### Autenticación y perfil
 
-- Registro de usuarios.
-- Inicio de sesión.
-- JWT Access Token.
-- Refresh Token.
-- Rotación de refresh tokens.
-- Blacklist de tokens.
+- Registro e inicio de sesión.
+- Autenticación mediante JWT.
+- Renovación del access token.
+- Rotación y bloqueo de refresh tokens.
 - Cierre de sesión.
-- Gestión del perfil.
+- Consulta y gestión del perfil.
 
 ### Gestión de usuarios
 
@@ -47,30 +46,51 @@ Además, cada evento puede tener miembros de equipo con funciones específicas d
 - Búsqueda por nombre o correo.
 - Filtro por estado.
 - Consulta de roles.
-- Cambio de estado de cuentas.
+- Cambio de estado de las cuentas.
 - Protección para impedir que un administrador cambie el estado de su propia cuenta.
 
 ### Gestión de eventos
 
-- Creación de eventos.
-- Consulta de eventos.
-- Edición de eventos.
-- Eliminación de eventos.
-- Publicación de eventos.
-- Categorías.
-- Lugares.
-- Modalidades.
-- Tipos de entrada.
-- Gestión del equipo del evento.
+- Creación, consulta y edición de eventos.
+- Publicación y cancelación.
+- Configuración de categorías, lugares y modalidades.
+- Gestión de tipos de entrada y cupos.
+- Configuración del periodo de inscripción.
+- Asignación de organizadores y personal de apoyo.
+- Consulta de eventos propios con filtros por estado.
 
-### Exploración de eventos
+### Catálogo de eventos
 
-Los usuarios pueden consultar los eventos disponibles mediante:
+Explorar eventos muestra los eventos publicados cuya fecha de finalización todavía no ha pasado, respetando las reglas de visibilidad y acceso.
 
-- Búsqueda por texto.
-- Filtro por modalidad.
-- Paginación.
-- Ordenamiento por fecha.
+El catálogo permite:
+
+- Buscar por texto.
+- Filtrar por modalidad.
+- Consultar los resultados mediante paginación.
+- Ver los eventos ordenados por fecha.
+
+Los borradores, cancelados y finalizados no aparecen en el catálogo.
+
+Inicio presenta un resumen de hasta cuatro eventos. La opción «Ver todos» abre el catálogo completo con paginación.
+
+### Historial y eliminación
+
+Los eventos que terminan se conservan junto con sus inscripciones, entradas y registros de asistencia.
+
+En Mis eventos se pueden consultar mediante los filtros:
+
+- Todos.
+- Publicados vigentes.
+- Borradores.
+- Finalizados.
+- Cancelados.
+
+Los eventos publicados cuya fecha de finalización ya pasó se muestran como finalizados en este listado. Esta clasificación visual no modifica automáticamente el estado almacenado en la base de datos.
+
+La eliminación se permite únicamente para eventos en estado BORRADOR que no tengan inscripciones, escaneos ni notificaciones asociadas.
+
+Si un evento no se realizará, se puede cambiar su estado a CANCELADO para conservar sus registros.
 
 ### Inscripciones
 
@@ -78,75 +98,113 @@ Los usuarios pueden consultar los eventos disponibles mediante:
 - Consulta de inscripciones propias.
 - Cancelación de inscripciones.
 - Reactivación cuando corresponde.
-- Control de cupos.
+- Validación del periodo de inscripción.
+- Control de capacidad del evento y cupos por tipo de entrada.
 
-### Entradas y QR
+### Entradas y códigos QR
 
-- Generación de entradas.
-- Código público de entrada.
-- Generación de código QR.
+- Generación de entradas asociadas a las inscripciones.
+- Identificador público de cada entrada.
+- Generación de códigos QR.
 - Consulta de entradas propias.
-- Validación de entradas.
+- Validación de entradas por personal autorizado.
 
 ### Validación y asistencia
 
-La validación de una entrada comprueba:
+Durante la validación se comprueba:
 
 - Que la entrada exista.
-- Que pertenezca al evento correspondiente.
-- Que se encuentre activa.
-- Que el evento esté dentro de su periodo válido.
-- Que la entrada no haya sido utilizada previamente.
+- Que corresponda al evento seleccionado.
+- Que la entrada esté activa y su inscripción esté confirmada.
+- Que el estado y el periodo del evento permitan la validación.
+- Que la entrada no se haya utilizado previamente.
 
-Cuando la validación es correcta se registra la asistencia.
+Cuando la validación es correcta, se registra la asistencia. Los intentos de escaneo permiten consultar el resultado de la validación.
 
 ### Gestión de asistentes
 
-- Consulta de asistentes.
-- Búsqueda de asistentes.
-- Filtros.
-- Paginación.
+- Consulta y búsqueda de asistentes.
+- Filtros y paginación.
 - Importación mediante CSV.
 - Exportación mediante CSV.
 
 ### Reportes
 
-NOVA permite consultar información del evento relacionada con:
-
-- Inscripciones.
-- Entradas.
-- Asistencia.
-- Estados.
-- Tipos de entrada.
-- Información general del evento.
+Los reportes permiten consultar información del evento relacionada con inscripciones, entradas, asistencia, estados y tipos de entrada.
 
 ### Auditoría
 
-El sistema registra acciones relevantes realizadas por los usuarios, incluyendo acciones relacionadas con:
+El sistema registra acciones relevantes relacionadas con usuarios, eventos, inscripciones, entradas, validaciones, equipos y reportes.
 
-- Usuarios.
-- Eventos.
-- Inscripciones.
-- Entradas.
-- Validaciones.
-- Equipo de eventos.
-- Reportes.
+## Estructura del proyecto
 
-## Roles y permisos
+- `backend/`: API, autenticación, permisos y lógica de negocio.
+- `frontend/`: interfaz web desarrollada con Angular.
+- `database/`: scripts de base de datos.
+- `docker-compose.yml`: configuración de los servicios.
+- `.env.example`: plantilla de variables de entorno.
+- `ARQUITECTURA.md`: documentación de la arquitectura.
 
-Los permisos se manejan mediante roles globales y permisos específicos.
+## Ejecución local con Docker
 
-Algunos permisos utilizados por el sistema son:
+### Requisitos
 
-```text
-usuarios.gestionar
-eventos.ver
-eventos.crear
-eventos.editar_propios
-equipo.gestionar
-inscripciones.crear
-inscripciones.ver_evento
-entradas.ver_propias
-entradas.validar
-reportes.ver_evento
-reportes.ver_global
+- Git.
+- Docker Desktop instalado y en ejecución.
+
+### Instalación
+
+Clona el repositorio:
+
+```powershell
+git clone https://github.com/melanieycarrillo23-ui/NOVA.git
+cd NOVA
+```
+
+Crea el archivo de variables de entorno a partir de la plantilla:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Revisa el archivo `.env` y configura los valores necesarios antes de iniciar los servicios.
+
+Construye e inicia los contenedores:
+
+```powershell
+docker compose up -d --build
+```
+
+Comprueba su estado:
+
+```powershell
+docker compose ps
+```
+
+Todos los comandos de Docker Compose deben ejecutarse desde la carpeta que contiene `docker-compose.yml`.
+
+### Actualizar backend y frontend
+
+Después de modificar el código, reconstruye los servicios:
+
+```powershell
+docker compose up -d --build backend frontend
+```
+
+### Consultar registros
+
+```powershell
+docker compose logs --tail=100 backend frontend
+```
+
+### Detener los servicios
+
+```powershell
+docker compose stop
+```
+
+## Configuración y datos
+
+El archivo `.env` contiene la configuración local y no debe incluirse en el repositorio. `.env.example` sirve como plantilla y debe mantenerse sin credenciales reales.
+
+Git conserva el código y los scripts del proyecto, pero no respalda automáticamente los datos almacenados en PostgreSQL. Los respaldos de la base de datos deben realizarse por separado.
