@@ -37,10 +37,16 @@ export class CrearEventoComponent {
   error = signal('');
   guardando = signal(false);
 
-  mostrarVolverMisEventos =
+  private readonly origen =
     this.route.snapshot
       .queryParamMap
-      .get('origen') === 'mis-eventos';
+      .get('origen');
+
+  mostrarVolverInicio =
+    this.origen === 'inicio';
+
+  mostrarVolverMisEventos =
+    this.origen === 'mis-eventos';
 
 
   form = this.fb.nonNullable.group({
@@ -88,9 +94,25 @@ export class CrearEventoComponent {
 
   volver(): void {
 
-    this.router.navigate([
-      '/mis-eventos'
-    ]);
+    if (
+      this.origen === 'inicio'
+    ) {
+
+      this.router.navigate([
+        '/dashboard'
+      ]);
+
+      return;
+    }
+
+    if (
+      this.origen === 'mis-eventos'
+    ) {
+
+      this.router.navigate([
+        '/mis-eventos'
+      ]);
+    }
   }
 
 

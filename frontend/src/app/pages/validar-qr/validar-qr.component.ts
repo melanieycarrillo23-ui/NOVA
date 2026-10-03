@@ -72,6 +72,9 @@ export class ValidarQrComponent implements OnInit {
   mostrarVolverEventosAsignados =
     signal(false);
 
+  mostrarVolverInicio =
+    signal(false);
+
 
   form = this.fb.nonNullable.group({
 
@@ -98,6 +101,12 @@ export class ValidarQrComponent implements OnInit {
         .get('origen') === 'eventos-asignados'
     );
 
+    this.mostrarVolverInicio.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'inicio'
+    );
+
     this.cargarEventos();
 
     const eventoId = Number(
@@ -116,6 +125,14 @@ export class ValidarQrComponent implements OnInit {
 
 
   volver(): void {
+
+    if (this.mostrarVolverInicio()) {
+      this.router.navigate([
+        '/dashboard'
+      ]);
+
+      return;
+    }
 
     this.router.navigate([
       '/eventos-asignados'

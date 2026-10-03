@@ -8,7 +8,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import {
   ActivatedRoute,
-  RouterLink
+  Router
 } from '@angular/router';
 
 import {
@@ -19,13 +19,13 @@ import {
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
 
+
 @Component({
   selector: 'app-reportes',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    RouterLink
+    FormsModule
   ],
   templateUrl: './reportes.component.html',
   styleUrl: './reportes.component.css'
@@ -35,6 +35,7 @@ export class ReportesComponent implements OnInit {
   private readonly api = inject(EventosService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   eventos = signal<Evento[]>([]);
 
@@ -46,18 +47,46 @@ export class ReportesComponent implements OnInit {
   cargando = signal(false);
   error = signal('');
 
-  mostrarVolverMisEventos = signal(false);
+  mostrarVolverInicio = false;
+  mostrarVolverMisEventos = false;
+
 
   ngOnInit(): void {
 
-    this.mostrarVolverMisEventos.set(
+    const origen =
       this.route.snapshot
         .queryParamMap
-        .get('origen') === 'mis-eventos'
-    );
+        .get('origen');
+
+    this.mostrarVolverInicio =
+      origen === 'inicio';
+
+    this.mostrarVolverMisEventos =
+      origen === 'mis-eventos';
 
     this.cargarEventos();
   }
+
+
+  volver(): void {
+
+    if (this.mostrarVolverInicio) {
+
+      this.router.navigate([
+        '/dashboard'
+      ]);
+
+      return;
+    }
+
+    if (this.mostrarVolverMisEventos) {
+
+      this.router.navigate([
+        '/mis-eventos'
+      ]);
+    }
+  }
+
 
   cargarEventos(): void {
 
@@ -91,7 +120,9 @@ export class ReportesComponent implements OnInit {
 
       next: respuesta => {
 
-        this.eventos.set(respuesta);
+        this.eventos.set(
+          respuesta
+        );
 
         this.seleccionarDesdeUrl();
       },
@@ -104,6 +135,7 @@ export class ReportesComponent implements OnInit {
       }
     });
   }
+
 
   seleccionarDesdeUrl(): void {
 
@@ -120,6 +152,7 @@ export class ReportesComponent implements OnInit {
       this.consultar();
     }
   }
+
 
   consultar(): void {
 
@@ -155,6 +188,7 @@ export class ReportesComponent implements OnInit {
       }
     });
   }
+
 
   porcentajeTipo(
     usadas: number,

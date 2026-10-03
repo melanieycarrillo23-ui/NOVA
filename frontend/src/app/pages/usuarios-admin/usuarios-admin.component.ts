@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Usuario } from '../../models/models';
 import { AuthService } from '../../services/auth.service';
@@ -12,7 +13,8 @@ import { EventosService } from '../../services/eventos.service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl:
     './usuarios-admin.component.html',
@@ -65,7 +67,11 @@ export class UsuariosAdminComponent implements OnInit {
   estadoFiltro = '';
 
 
+  private readonly route = inject(ActivatedRoute);
+  mostrarVolverInicio = signal(false);
+
   ngOnInit(): void {
+    this.mostrarVolverInicio.set(this.route.snapshot.queryParamMap.get('origen') === 'inicio');
     this.cargar();
   }
 

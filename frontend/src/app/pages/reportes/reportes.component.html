@@ -1,17 +1,26 @@
 <section class="reports-page">
 
-  <!-- VOLVER -->
-  <a
-    *ngIf="mostrarVolverMisEventos()"
-    routerLink="/mis-eventos"
+  <button
+    *ngIf="mostrarVolverInicio"
+    type="button"
     class="back-link"
+    (click)="volver()"
+  >
+    <span aria-hidden="true">←</span>
+    Volver al inicio
+  </button>
+
+  <button
+    *ngIf="mostrarVolverMisEventos"
+    type="button"
+    class="back-link"
+    (click)="volver()"
   >
     <span aria-hidden="true">←</span>
     Volver a mis eventos
-  </a>
+  </button>
 
 
-  <!-- ENCABEZADO -->
   <header class="page-header">
 
     <div>
@@ -28,264 +37,3 @@
     </div>
 
   </header>
-
-
-  <!-- SELECTOR -->
-  <section class="card selector-card">
-
-    <div class="selector-row">
-
-      <div class="field selector-field">
-
-        <label for="evento-reporte">
-          Evento
-        </label>
-
-        <select
-          id="evento-reporte"
-          [(ngModel)]="eventoId"
-        >
-
-          <option [ngValue]="null">
-            Selecciona un evento
-          </option>
-
-          <option
-            *ngFor="let evento of eventos()"
-            [ngValue]="evento.id"
-          >
-            {{ evento.nombre }}
-          </option>
-
-        </select>
-
-      </div>
-
-
-      <button
-        type="button"
-        class="btn btn-primary selector-button"
-        [disabled]="!eventoId || cargando()"
-        (click)="consultar()"
-      >
-        {{
-          cargando()
-            ? 'Generando...'
-            : 'Generar reporte'
-        }}
-      </button>
-
-    </div>
-
-  </section>
-
-
-  <!-- ERROR -->
-  <div
-    class="error"
-    *ngIf="error()"
-  >
-    {{ error() }}
-  </div>
-
-
-  <!-- REPORTE -->
-  <ng-container *ngIf="reporte() as r">
-
-    <div class="report-content">
-
-
-      <!-- EVENTO -->
-      <section class="card event-summary">
-
-        <div>
-
-          <span class="badge">
-            Reporte del evento
-          </span>
-
-          <h2>
-            {{ r.evento.nombre }}
-          </h2>
-
-          <p>
-            Resumen de inscripciones y asistencia
-            registrada.
-          </p>
-
-        </div>
-
-      </section>
-
-
-      <!-- INDICADORES -->
-      <section class="stats-grid">
-
-        <article class="card stat-card">
-
-          <span class="stat-value">
-            {{ r.inscritos }}
-          </span>
-
-          <span class="stat-label">
-            Inscritos
-          </span>
-
-        </article>
-
-
-        <article class="card stat-card">
-
-          <span class="stat-value">
-            {{ r.asistieron }}
-          </span>
-
-          <span class="stat-label">
-            Asistieron
-          </span>
-
-        </article>
-
-
-        <article class="card stat-card">
-
-          <span class="stat-value">
-            {{ r.ausentes }}
-          </span>
-
-          <span class="stat-label">
-            Ausentes
-          </span>
-
-        </article>
-
-
-        <article class="card stat-card">
-
-          <span class="stat-value">
-            {{ r.porcentaje_asistencia }}%
-          </span>
-
-          <span class="stat-label">
-            Asistencia
-          </span>
-
-        </article>
-
-      </section>
-
-
-      <!-- TIPOS DE ENTRADA -->
-      <section class="card tickets-report">
-
-        <header class="section-header">
-
-          <div>
-
-            <h3>
-              Por tipo de entrada
-            </h3>
-
-            <p class="secondary">
-              Compara las entradas emitidas con
-              las que ya fueron utilizadas.
-            </p>
-
-          </div>
-
-        </header>
-
-
-        <div
-          class="ticket-list"
-          *ngIf="r.tipos_entrada.length"
-        >
-
-          <article
-            class="ticket-row"
-            *ngFor="let tipo of r.tipos_entrada"
-          >
-
-            <div class="ticket-header">
-
-              <strong>
-                {{ tipo.nombre }}
-              </strong>
-
-              <span>
-                {{ tipo.usadas }}
-                de
-                {{ tipo.emitidas }}
-                utilizadas
-              </span>
-
-            </div>
-
-
-            <div class="metric-bar">
-
-              <div
-                [style.width.%]="
-                  porcentajeTipo(
-                    tipo.usadas,
-                    tipo.emitidas
-                  )
-                "
-              ></div>
-
-            </div>
-
-
-            <div class="ticket-percentage">
-
-              {{
-                porcentajeTipo(
-                  tipo.usadas,
-                  tipo.emitidas
-                )
-                  | number:'1.0-0'
-              }}%
-            </div>
-
-          </article>
-
-        </div>
-
-
-        <div
-          class="empty compact-empty"
-          *ngIf="!r.tipos_entrada.length"
-        >
-          Este evento todavía no tiene
-          entradas emitidas.
-        </div>
-
-      </section>
-
-    </div>
-
-  </ng-container>
-
-
-  <!-- ESTADO INICIAL -->
-  <div
-    class="empty initial-empty"
-    *ngIf="
-      !reporte() &&
-      !cargando() &&
-      !error()
-    "
-  >
-
-    <h3>
-      Selecciona un evento
-    </h3>
-
-    <p>
-      Elige un evento para consultar
-      sus indicadores.
-    </p>
-
-  </div>
-
-</section>

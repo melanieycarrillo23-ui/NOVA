@@ -1,5 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { EMPTY, Observable, expand, reduce } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 
@@ -56,12 +57,29 @@ export class EventosService {
   private readonly api = environment.apiUrl;
 
 
-  listarCategorias() {
-    return this.http.get<
-      Paginated<CategoriaEvento>
-    >(
-      `${this.api}/categorias/`
+  private listarTodasLasPaginas<T>(
+    ruta: string,
+    params = new HttpParams()
+  ): Observable<Paginated<T>> {
+    const cargar = (pagina: number) => this.http.get<Paginated<T>>(
+      `${this.api}/${ruta}/`,
+      { params: params.set('page', pagina) }
     );
+
+    return cargar(1).pipe(
+      expand((respuesta, indice) => respuesta.next ? cargar(indice + 2) : EMPTY),
+      reduce((acumulado, respuesta) => ({
+        count: respuesta.count,
+        next: null,
+        previous: null,
+        results: [...acumulado.results, ...respuesta.results]
+      }), { count: 0, next: null, previous: null, results: [] } as Paginated<T>)
+    );
+  }
+
+
+  listarCategorias() {
+    return this.listarTodasLasPaginas<CategoriaEvento>('categorias');
   }
 
 
@@ -182,25 +200,11 @@ export class EventosService {
   }
 
 
-  tiposEntrada(
-    evento?: number
-  ) {
-    const params =
-      evento
-        ? new HttpParams().set(
-            'evento',
-            evento
-          )
-        : undefined;
-
-    return this.http.get<
-      Paginated<TipoEntrada>
-    >(
-      `${this.api}/tipos-entrada/`,
-      {
-        params
-      }
-    );
+  tiposEntrada(evento?: number) {
+    const params = evento
+      ? new HttpParams().set('evento', evento)
+      : new HttpParams();
+    return this.listarTodasLasPaginas<TipoEntrada>('tipos-entrada', params);
   }
 
 
@@ -491,22 +495,10 @@ export class EventosService {
   }
 
 
-  equipoEvento(
-    eventoId: number
-  ) {
-    const params =
-      new HttpParams().set(
-        'evento',
-        eventoId
-      );
-
-    return this.http.get<
-      Paginated<MiembroEquipoEvento>
-    >(
-      `${this.api}/equipo-eventos/`,
-      {
-        params
-      }
+  equipoEvento(eventoId: number) {
+    return this.listarTodasLasPaginas<MiembroEquipoEvento>(
+      'equipo-eventos',
+      new HttpParams().set('evento', eventoId)
     );
   }
 

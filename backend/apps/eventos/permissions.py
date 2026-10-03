@@ -1,5 +1,6 @@
 from apps.cuentas.permissions import usuario_tiene_rol
-from .models import MiembroEquipoEvento
+from django.db.models import Q
+from .models import Evento, MiembroEquipoEvento
 
 
 def es_admin(usuario):
@@ -26,3 +27,15 @@ def es_staff_evento(usuario, evento):
         rol__codigo='STAFF',
         estado=MiembroEquipoEvento.Estado.ACTIVO,
     ).exists()
+
+
+def filtrar_eventos_visibles(queryset, usuario):
+    if usuario.is_authenticated and es_admin(usuario):
+        return queryset
+
+    visibles = Q(estado=Evento.Estado.PUBLICADO, visibilidad=Evento.Visibilidad.PUBLICO)
+    if usuario.is_authenticated:
+        visibles |= Q(creado_por=usuario)
+        visibles |= Q(equipo__usuario=usuario, equipo__estado=MiembroEquipoEvento.Estado.ACTIVO)
+        visibles |= Q(inscripciones__usuario=usuario, inscripciones__estado='CONFIRMADA')
+    return queryset.filter(visibles).distinct()

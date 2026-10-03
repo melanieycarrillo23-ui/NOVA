@@ -1,5 +1,14 @@
 <section class="my-events-page">
 
+  <a
+    *ngIf="mostrarVolverInicio()"
+    routerLink="/dashboard"
+    class="back-link"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver al inicio
+  </a>
+
   <header class="page-header">
 
     <div>
@@ -26,6 +35,19 @@
 
   </header>
 
+  <div class="event-filters" aria-label="Filtrar eventos por estado">
+    <button *ngFor="let opcion of filtros" type="button"
+      class="btn" [class.btn-primary]="filtro() === opcion.valor"
+      [attr.aria-pressed]="filtro() === opcion.valor"
+      (click)="filtro.set(opcion.valor)">
+      {{ opcion.texto }}
+    </button>
+  </div>
+  <p class="page-subtitle">Los eventos publicados cuya fecha de fin ya pasó se muestran como finalizados. Su historial se conserva.</p>
+  <p class="empty" *ngIf="!cargando() && items().length && !visibles().length && !error()">
+    No tienes eventos en este estado.
+  </p>
+
 
   <div
     class="error"
@@ -47,22 +69,22 @@
     class="events-grid"
     *ngIf="
       !cargando() &&
-      items().length
+      visibles().length
     "
   >
 
     <article
       class="card event-card"
-      *ngFor="let evento of items()"
+      *ngFor="let evento of visibles()"
     >
 
       <div class="event-card-header">
 
         <span
           class="event-status"
-          [ngClass]="claseEstado(evento.estado)"
+          [ngClass]="claseEstado(estadoVisible(evento))"
         >
-          {{ evento.estado }}
+          {{ estadoVisible(evento) }}
         </span>
 
         <span class="event-modality">

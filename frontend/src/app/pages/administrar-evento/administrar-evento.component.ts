@@ -8,6 +8,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import {
   ActivatedRoute,
+  Router,
   RouterLink
 } from '@angular/router';
 
@@ -37,6 +38,7 @@ export class AdministrarEventoComponent implements OnInit {
 
   private readonly api = inject(EventosService);
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
   eventos = signal<Evento[]>([]);
 
@@ -47,6 +49,7 @@ export class AdministrarEventoComponent implements OnInit {
   cargando = signal(false);
   error = signal('');
 
+  mostrarVolverInicio = signal(false);
   mostrarVolverMisEventos = signal(false);
 
   edicionEvento = {
@@ -100,9 +103,17 @@ export class AdministrarEventoComponent implements OnInit {
 
   ngOnInit(): void {
 
+    const origen =
+      this.route.snapshot
+        .queryParamMap
+        .get('origen');
+
+    this.mostrarVolverInicio.set(
+      origen === 'inicio'
+    );
+
     this.mostrarVolverMisEventos.set(
-      this.route.snapshot.queryParamMap.get('origen') ===
-        'mis-eventos'
+      origen === 'mis-eventos'
     );
 
     this.api.misEventos().subscribe({
@@ -129,6 +140,25 @@ export class AdministrarEventoComponent implements OnInit {
         );
       }
     });
+  }
+
+  volver(): void {
+
+    if (this.mostrarVolverInicio()) {
+
+      this.router.navigate([
+        '/dashboard'
+      ]);
+
+      return;
+    }
+
+    if (this.mostrarVolverMisEventos()) {
+
+      this.router.navigate([
+        '/mis-eventos'
+      ]);
+    }
   }
 
   cargar(): void {

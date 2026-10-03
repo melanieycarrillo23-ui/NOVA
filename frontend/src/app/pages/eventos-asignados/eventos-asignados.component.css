@@ -1,3 +1,24 @@
+.back-link {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: var(--muted);
+
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+
 .assigned-events-page {
   display: flex;
   flex-direction: column;

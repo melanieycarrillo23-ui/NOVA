@@ -1,12 +1,17 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { finalize, of, switchMap, tap } from 'rxjs';
+import { Observable, catchError, finalize, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RolCodigo, Usuario } from '../models/models';
 
 interface LoginResponse {
   access: string;
   refresh: string;
+}
+
+interface RefreshResponse {
+  access: string;
+  refresh?: string;
 }
 
 @Injectable({
@@ -16,6 +21,7 @@ export class AuthService {
 
   private http = inject(HttpClient);
   private api = environment.apiUrl;
+  private renovacion$: Observable<RefreshResponse> | null = null;
 
   usuario = signal<Usuario | null>(this.cargarUsuario());
 
@@ -59,30 +65,46 @@ export class AuthService {
     );
   }
 
-  refrescar() {
-    return this.http.post<{
-      access: string;
-      refresh?: string;
-    }>(
+  refrescar(): Observable<RefreshResponse> {
+    if (this.renovacion$) {
+      return this.renovacion$;
+    }
+
+    const refresh = this.refreshToken;
+    if (!refresh) {
+      return throwError(() => new HttpErrorResponse({ status: 401 }));
+    }
+
+    const renovacion$ = this.http.post<RefreshResponse>(
       `${this.api}/auth/token/refresh/`,
-      {
-        refresh: this.refreshToken
-      }
+      { refresh }
     ).pipe(
       tap(resp => {
-        localStorage.setItem(
-          'nova_access',
-          resp.access
-        );
-
-        if (resp.refresh) {
-          localStorage.setItem(
-            'nova_refresh',
-            resp.refresh
-          );
+        // Una respuesta pendiente no debe restaurar una sesión cerrada.
+        if (this.refreshToken !== refresh) {
+          throw new HttpErrorResponse({ status: 401 });
         }
-      })
+        localStorage.setItem('nova_access', resp.access);
+        if (resp.refresh) {
+          localStorage.setItem('nova_refresh', resp.refresh);
+        }
+      }),
+      catchError((error: HttpErrorResponse) => {
+        if ((error.status === 400 || error.status === 401) && this.refreshToken === refresh) {
+          this.limpiarSesion();
+        }
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        if (this.renovacion$ === renovacion$) {
+          this.renovacion$ = null;
+        }
+      }),
+      shareReplay({ bufferSize: 1, refCount: false })
     );
+
+    this.renovacion$ = renovacion$;
+    return renovacion$;
   }
 
   cargarPerfil() {
@@ -148,6 +170,7 @@ export class AuthService {
   
 
   limpiarSesion(): void {
+    this.renovacion$ = null;
     localStorage.removeItem('nova_access');
     localStorage.removeItem('nova_refresh');
     localStorage.removeItem('nova_usuario');

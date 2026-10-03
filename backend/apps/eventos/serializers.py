@@ -38,7 +38,13 @@ class EventoSerializer(serializers.ModelSerializer):
         inicio = attrs.get('fecha_hora_inicio', getattr(self.instance, 'fecha_hora_inicio', None))
         fin = attrs.get('fecha_hora_fin', getattr(self.instance, 'fecha_hora_fin', None))
         if inicio and fin and fin <= inicio:
-            raise serializers.ValidationError('La fecha de finalización debe ser posterior al inicio.')
+            raise serializers.ValidationError({'detail': 'La fecha de finalización debe ser posterior al inicio.'})
+        apertura = attrs.get('inicio_inscripciones', getattr(self.instance, 'inicio_inscripciones', None))
+        cierre = attrs.get('cierre_inscripciones', getattr(self.instance, 'cierre_inscripciones', None))
+        if apertura and cierre and cierre <= apertura:
+            raise serializers.ValidationError({'detail': 'El cierre de inscripciones debe ser posterior a su apertura.'})
+        if fin and ((apertura and apertura >= fin) or (cierre and cierre > fin)):
+            raise serializers.ValidationError({'detail': 'El periodo de inscripciones debe estar dentro del plazo del evento.'})
         return attrs
 
 
@@ -57,6 +63,19 @@ class TipoEntradaSerializer(serializers.ModelSerializer):
         model = TipoEntrada
         fields = '__all__'
         read_only_fields = ['id', 'creado_en', 'actualizado_en']
+
+
+    def validate(self, attrs):
+        inicio = attrs.get('inicio_disponibilidad', getattr(self.instance, 'inicio_disponibilidad', None))
+        fin = attrs.get('fin_disponibilidad', getattr(self.instance, 'fin_disponibilidad', None))
+        precio = attrs.get('precio', getattr(self.instance, 'precio', 0))
+        if precio < 0:
+            raise serializers.ValidationError({'detail': 'El precio no puede ser negativo.'})
+        if inicio and fin and fin <= inicio:
+            raise serializers.ValidationError({'detail': 'El fin de disponibilidad debe ser posterior al inicio.'})
+        if self.instance and 'evento' in attrs and attrs['evento'].pk != self.instance.evento_id:
+            raise serializers.ValidationError({'detail': 'No puedes trasladar un tipo de entrada a otro evento.'})
+        return attrs
 
 
 class InscripcionSerializer(serializers.ModelSerializer):

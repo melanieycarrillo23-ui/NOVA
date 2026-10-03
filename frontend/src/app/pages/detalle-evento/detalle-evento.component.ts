@@ -44,8 +44,10 @@ export class DetalleEventoComponent implements OnInit {
   error = signal('');
 
   vieneDeMisEventos = signal(false);
+  vieneDeInicio = signal(false);
 
   ngOnInit(): void {
+    this.vieneDeInicio.set(this.route.snapshot.queryParamMap.get('origen') === 'inicio');
 
     this.vieneDeMisEventos.set(
       this.route.snapshot
@@ -141,6 +143,10 @@ export class DetalleEventoComponent implements OnInit {
   }
 
   volver(): void {
+    if (this.vieneDeInicio()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
 
     if (this.vieneDeMisEventos()) {
 
@@ -155,6 +161,9 @@ export class DetalleEventoComponent implements OnInit {
   }
 
   textoVolver(): string {
+    if (this.vieneDeInicio()) {
+      return 'Volver al inicio';
+    }
 
     if (this.vieneDeMisEventos()) {
       return 'Volver a mis eventos';

@@ -1,18 +1,17 @@
 <section class="explore-page">
 
+  <a
+    *ngIf="mostrarVolverInicio()"
+    routerLink="/dashboard"
+    class="back-link"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver al inicio
+  </a>
+
   <header class="explore-header">
 
     <div class="title-area">
-
-      <a
-        routerLink="/dashboard"
-        aria-label="Volver al inicio"
-        title="Volver al inicio"
-        class="back-button"
-      >
-        &larr;
-      </a>
-
 
       <div>
 

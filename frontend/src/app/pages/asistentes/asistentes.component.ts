@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, forkJoin, of } from 'rxjs';
 
 import { Evento, Inscripcion } from '../../models/models';
@@ -20,7 +20,38 @@ import {
     CommonModule,
     FormsModule
   ],
+  styleUrl: './asistentes.component.css',
   template: `
+    <ng-container
+      *ngIf="
+        mostrarVolverEventosAsignados() ||
+        mostrarVolverInicio()
+      "
+    >
+
+      <button
+        *ngIf="mostrarVolverEventosAsignados()"
+        type="button"
+        class="back-link"
+        (click)="volver()"
+      >
+        <span aria-hidden="true">&larr;</span>
+        Volver a eventos asignados
+      </button>
+
+      <button
+        *ngIf="mostrarVolverInicio()"
+        type="button"
+        class="back-link"
+        (click)="volver()"
+      >
+        <span aria-hidden="true">&larr;</span>
+        Volver al inicio
+      </button>
+
+    </ng-container>
+
+
     <h1 class="page-title">
       Asistentes
     </h1>
@@ -649,6 +680,16 @@ export class AsistentesComponent
   private readonly route =
     inject(ActivatedRoute);
 
+  private readonly router =
+    inject(Router);
+
+
+  mostrarVolverEventosAsignados =
+    signal(false);
+
+  mostrarVolverInicio =
+    signal(false);
+
 
   eventos =
     signal<Evento[]>([]);
@@ -711,6 +752,18 @@ export class AsistentesComponent
 
   ngOnInit(): void {
 
+    this.mostrarVolverEventosAsignados.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'eventos-asignados'
+    );
+
+    this.mostrarVolverInicio.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'inicio'
+    );
+
     this.cargarEventos();
 
     const id = Number(
@@ -725,6 +778,22 @@ export class AsistentesComponent
 
       this.buscar();
     }
+  }
+
+
+  volver(): void {
+
+    if (this.mostrarVolverInicio()) {
+      this.router.navigate([
+        '/dashboard'
+      ]);
+
+      return;
+    }
+
+    this.router.navigate([
+      '/eventos-asignados'
+    ]);
   }
 
 

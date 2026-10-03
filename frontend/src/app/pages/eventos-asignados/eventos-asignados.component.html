@@ -1,5 +1,14 @@
 <section class="assigned-events-page">
 
+  <a
+    *ngIf="mostrarVolverInicio()"
+    routerLink="/dashboard"
+    class="back-link"
+  >
+    <span aria-hidden="true">&larr;</span>
+    Volver al inicio
+  </a>
+
   <header class="page-header">
 
     <div>

@@ -5,7 +5,7 @@ import {
   OnInit,
   signal
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Evento } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
@@ -23,12 +23,21 @@ import { EventosService } from '../../services/eventos.service';
 export class EventosAsignadosComponent implements OnInit {
 
   private readonly api = inject(EventosService);
+  private readonly route = inject(ActivatedRoute);
 
   items = signal<Evento[]>([]);
   cargando = signal(true);
   error = signal('');
+  mostrarVolverInicio = signal(false);
 
   ngOnInit(): void {
+
+    this.mostrarVolverInicio.set(
+      this.route.snapshot
+        .queryParamMap
+        .get('origen') === 'inicio'
+    );
+
     this.cargarEventos();
   }
 

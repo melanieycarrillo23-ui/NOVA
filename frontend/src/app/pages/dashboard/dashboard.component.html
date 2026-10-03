@@ -1,464 +1,384 @@
-<section class="dashboard">
+<h1 class="page-title">
+  Bienvenido, {{ auth.usuario()?.nombre_completo }}
+</h1>
 
-  <section
-    class="usuario-home"
-    *ngIf="esSoloUsuario()"
-  >
+<p class="page-subtitle">
+  Resumen de tu actividad en NOVA.
+</p>
 
-    <header class="dashboard-welcome">
 
-      <div>
-        <h1 class="page-title">
-          Bienvenido,
-          {{ auth.usuario()?.nombre_completo }}
-        </h1>
+<!-- RESUMEN GENERAL -->
 
-        <p class="page-subtitle">
-          Esto es lo más importante
-          para ti en este momento.
-        </p>
-      </div>
+<div class="grid grid-4">
 
-    </header>
+  <div class="card kpi">
 
-
-    <div class="usuario-home-grid">
-
-      <!-- PRÓXIMO EVENTO -->
-
-      <article class="card next-event-card">
-
-        <ng-container
-          *ngIf="
-            proximoEvento() as evento;
-            else sinProximoEvento
-          "
-        >
-
-          <div class="next-event-header">
-
-            <div>
-              <span class="section-kicker">
-                TU PRÓXIMO EVENTO
-              </span>
-
-              <h2 class="next-event-title">
-                {{ evento.nombre }}
-              </h2>
-
-              <p class="next-event-description">
-                {{
-                  evento.descripcion_corta ||
-                  'Tu próximo evento en NOVA.'
-                }}
-              </p>
-            </div>
-
-            <span class="time-badge">
-              {{ tiempoParaProximoEvento() }}
-            </span>
-
-          </div>
-
-
-          <div class="event-details">
-
-            <div class="event-detail">
-
-              <span class="detail-label">
-                Fecha
-              </span>
-
-              <strong>
-                {{
-                  formatearFechaHora(
-                    evento.fecha_hora_inicio
-                  )
-                }}
-              </strong>
-
-            </div>
-
-
-            <div class="event-detail">
-
-              <span class="detail-label">
-                Lugar
-              </span>
-
-              <strong>
-                {{
-                  evento.lugar_nombre ||
-                  evento.modalidad
-                }}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div class="status-grid">
-
-            <div class="status-item">
-
-              <span>
-                Inscripción
-              </span>
-
-              <strong class="status-success">
-                {{
-                  inscripcionProxima()?.estado ||
-                  'Sin confirmar'
-                }}
-              </strong>
-
-            </div>
-
-
-            <div class="status-item">
-
-              <span>
-                Entrada
-              </span>
-
-              <strong
-                [class.status-success]="
-                  entradaProxima()?.estado === 'ACTIVA'
-                "
-              >
-                {{
-                  entradaProxima()?.estado ||
-                  'No disponible'
-                }}
-              </strong>
-
-            </div>
-
-          </div>
-
-
-          <div class="next-event-actions">
-
-            <a
-              [routerLink]="[
-                '/eventos',
-                evento.id
-              ]"
-              [queryParams]="{
-                origen: 'inicio'
-              }"
-              class="btn btn-secondary"
-            >
-              Ver detalles
-            </a>
-
-            <a
-              *ngIf="
-                entradaProxima()?.estado === 'ACTIVA'
-              "
-              routerLink="/mis-entradas"
-              class="btn btn-primary"
-            >
-              Ver entrada QR
-            </a>
-
-          </div>
-
-        </ng-container>
-
-
-        <ng-template #sinProximoEvento>
-
-          <div class="empty-next-event">
-
-            <span class="section-kicker">
-              TU PRÓXIMO EVENTO
-            </span>
-
-            <h2>
-              No tienes eventos próximos
-            </h2>
-
-            <p class="secondary">
-              Cuando te inscribas en un evento,
-              aparecerá aquí la información
-              que necesitas.
-            </p>
-
-            <a
-              routerLink="/eventos"
-              class="btn btn-primary"
-            >
-              Explorar eventos
-            </a>
-
-          </div>
-
-        </ng-template>
-
-      </article>
-
-
-      <!-- ACTIVIDAD RECIENTE -->
-
-      <article class="card activity-card">
-
-        <div class="activity-header">
-
-          <div>
-            <span class="section-kicker">
-              TU CUENTA
-            </span>
-
-            <h3>
-              Actividad reciente
-            </h3>
-          </div>
-
-        </div>
-
-
-        <div
-          class="activity-list"
-          *ngIf="
-            actividadReciente().length;
-            else sinActividad
-          "
-        >
-
-          <div
-            class="activity-item"
-            *ngFor="
-              let actividad of
-              actividadReciente()
-            "
-          >
-
-            <div class="activity-marker"></div>
-
-            <div class="activity-content">
-
-              <strong>
-                {{ actividad.titulo }}
-              </strong>
-
-              <span>
-                {{ actividad.detalle }}
-              </span>
-
-              <small>
-                {{
-                  formatearFechaCorta(
-                    actividad.fecha
-                  )
-                }}
-              </small>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <ng-template #sinActividad>
-
-          <div class="empty activity-empty">
-            Todavía no hay actividad
-            registrada en tu cuenta.
-          </div>
-
-        </ng-template>
-
-      </article>
-
+    <div class="kpi-value">
+      {{ totalEventos() }}
     </div>
 
-  </section>
+    <div class="kpi-label">
+      Eventos disponibles
+    </div>
+
+  </div>
 
 
-  <!-- ORGANIZACIÓN -->
-  <!-- ORGANIZACIÓN -->
+  <div class="card kpi">
 
-  <section
-    class="role-section"
-    *ngIf="
-      auth.tieneRol(
-        'ORGANIZADOR',
-        'ADMIN'
-      )
-    "
-  >
+    <div class="kpi-value">
+      {{ inscripciones().length }}
+    </div>
 
-    <article class="card">
+    <div class="kpi-label">
+      Mis inscripciones
+    </div>
 
-      <div class="card-header">
-
-        <div>
-          <h3>Organización</h3>
-
-          <p class="secondary">
-            Eventos que administras en NOVA.
-          </p>
-        </div>
-
-        <a
-          routerLink="/mis-eventos"
-          class="chip"
-        >
-          Ver eventos
-        </a>
-
-      </div>
-
-      <div class="role-value">
-        {{ misEventos().length }}
-      </div>
-
-    </article>
+  </div>
 
 
-    <article class="card">
+  <div class="card kpi">
 
-      <h3>Acciones de organización</h3>
+    <div class="kpi-value">
+      {{ entradas().length }}
+    </div>
 
-      <div class="role-actions">
+    <div class="kpi-label">
+      Mis entradas
+    </div>
 
-        <a
-          routerLink="/crear-evento"
-          class="btn btn-primary"
-        >
-          Crear evento
-        </a>
-
-        <a
-          routerLink="/mis-eventos"
-          class="btn btn-secondary"
-        >
-          Administrar eventos
-        </a>
-
-        <a
-          routerLink="/reportes"
-          class="btn btn-ghost"
-        >
-          Consultar reportes
-        </a>
-
-      </div>
-
-    </article>
-
-  </section>
+  </div>
 
 
-  <!-- OPERACIÓN -->
+  <div class="card kpi">
 
-  <section
-    class="role-section"
-    *ngIf="
-      auth.tieneRol(
-        'STAFF',
-        'ORGANIZADOR',
-        'ADMIN'
-      )
-    "
-  >
+    <div class="kpi-value">
+      {{ roles() }}
+    </div>
 
-    <article class="card">
+    <div class="kpi-label">
+      Roles activos
+    </div>
 
-      <div class="card-header">
+  </div>
 
-        <div>
-          <h3>Operación</h3>
-
-          <p class="secondary">
-            Eventos en los que formas parte
-            del equipo.
-          </p>
-        </div>
-
-        <a
-          routerLink="/eventos-asignados"
-          class="chip"
-        >
-          Ver asignados
-        </a>
-
-      </div>
-
-      <div class="role-value">
-        {{ asignados().length }}
-      </div>
-
-    </article>
+</div>
 
 
-    <article class="card">
+<!-- ORGANIZADOR / ADMIN -->
 
-      <h3>Acciones de operación</h3>
+<div
+  class="grid grid-2"
+  style="margin-top: 18px"
+  *ngIf="
+    auth.tieneRol(
+      'ORGANIZADOR',
+      'ADMIN'
+    )
+  "
+>
 
-      <div class="role-actions">
-
-        <a
-          routerLink="/validar-qr"
-          class="btn btn-primary"
-        >
-          Validar entrada QR
-        </a>
-
-        <a
-          routerLink="/asistentes"
-          class="btn btn-ghost"
-        >
-          Consultar asistentes
-        </a>
-
-      </div>
-
-    </article>
-
-  </section>
-
-
-  <!-- ADMIN -->
-
-  <section
-    class="card admin-section"
-    *ngIf="auth.tieneRol('ADMIN')"
-  >
+  <div class="card">
 
     <div class="card-header">
 
-      <div>
-        <h3>Administración</h3>
+      <h3>
+        Organización
+      </h3>
 
-        <p class="secondary">
-          Gestión general de la plataforma NOVA.
-        </p>
+      <a
+        routerLink="/mis-eventos"
+        [queryParams]="{ origen: 'inicio' }"
+        class="chip"
+      >
+        Ver mis eventos
+      </a>
+
+    </div>
+
+    <div class="kpi-value">
+      {{ misEventos().length }}
+    </div>
+
+    <p class="secondary">
+      Eventos que administras en NOVA.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      Acciones de organización
+    </h3>
+
+    <div
+      class="stack"
+      style="margin-top: 16px"
+    >
+
+      <a
+        class="btn btn-primary"
+        routerLink="/crear-evento"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+      >
+        Crear evento
+      </a>
+
+
+      <a
+        class="btn btn-secondary"
+        routerLink="/administrar-evento"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+      >
+        Administrar eventos
+      </a>
+
+
+      <a
+        class="btn btn-ghost"
+        routerLink="/reportes"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+      >
+        Consultar reportes
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- STAFF / ORGANIZADOR / ADMIN -->
+
+<div
+  class="grid grid-2"
+  style="margin-top: 18px"
+  *ngIf="
+    auth.tieneRol(
+      'STAFF',
+      'ORGANIZADOR',
+      'ADMIN'
+    )
+  "
+>
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <h3>
+        Operación
+      </h3>
+
+      <a
+        routerLink="/eventos-asignados"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+        class="chip"
+      >
+        Ver asignados
+      </a>
+
+    </div>
+
+    <div class="kpi-value">
+      {{ asignados().length }}
+    </div>
+
+    <p class="secondary">
+      Eventos en los que formas parte del equipo.
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <h3>
+      Acciones de operación
+    </h3>
+
+    <div
+      class="stack"
+      style="margin-top: 16px"
+    >
+
+      <a
+        class="btn btn-primary"
+        routerLink="/validar-qr"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+      >
+        Validar entrada QR
+      </a>
+
+
+      <a
+        class="btn btn-ghost"
+        routerLink="/asistentes"
+        [queryParams]="{
+          origen: 'inicio'
+        }"
+      >
+        Consultar asistentes
+      </a>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ADMIN -->
+
+<div
+  class="card"
+  style="margin-top: 18px"
+  *ngIf="
+    auth.tieneRol('ADMIN')
+  "
+>
+
+  <div class="card-header">
+
+    <div>
+
+      <h3>
+        Administración
+      </h3>
+
+      <p class="secondary">
+        Gestión general de la plataforma NOVA.
+      </p>
+
+    </div>
+
+  </div>
+
+
+  <div
+    class="grid grid-2"
+    style="margin-top: 16px"
+  >
+
+    <a
+      class="btn btn-secondary"
+      routerLink="/usuarios"
+        [queryParams]="{ origen: 'inicio' }"
+    >
+      Administrar usuarios
+    </a>
+
+
+    <a
+      class="btn btn-secondary"
+      routerLink="/categorias"
+        [queryParams]="{ origen: 'inicio' }"
+    >
+      Administrar categorías
+    </a>
+
+  </div>
+
+</div>
+
+
+<!-- PRÓXIMOS EVENTOS -->
+
+<div
+  class="grid"
+  style="margin-top: 18px"
+>
+
+  <div class="card">
+
+    <div class="card-header">
+
+      <h3>
+        Próximos eventos
+      </h3>
+
+      <a
+        routerLink="/eventos"
+        [queryParams]="{ origen: 'inicio' }"
+        class="chip"
+      >
+        Ver todos ({{ totalEventos() }})
+      </a>
+
+    </div>
+
+
+    <div class="stack">
+
+      <a
+        *ngFor="
+          let evento of eventos().slice(0, 4)
+        "
+        [routerLink]="[
+          '/eventos',
+          evento.id
+        ]"
+        [queryParams]="{ origen: 'inicio' }"
+        class="event-card"
+      >
+
+        <div class="event-top">
+
+          <strong>
+            {{ evento.nombre }}
+          </strong>
+
+          <span class="badge">
+            {{ evento.estado }}
+          </span>
+
+        </div>
+
+
+        <div class="event-meta">
+
+          <span>
+            {{
+              evento.fecha_hora_inicio
+                | date:'mediumDate'
+            }}
+          </span>
+
+          <span>
+            {{
+              evento.lugar_nombre ||
+              evento.modalidad
+            }}
+          </span>
+
+        </div>
+
+      </a>
+
+
+      <div
+        class="empty"
+        *ngIf="!eventos().length"
+      >
+        No hay eventos para mostrar.
       </div>
 
     </div>
 
-    <div class="admin-actions">
+  </div>
 
-      <a
-        routerLink="/usuarios"
-        class="btn btn-secondary"
-      >
-        Administrar usuarios
-      </a>
 
-      <a
-        routerLink="/categorias"
-        class="btn btn-secondary"
-      >
-        Administrar categorías
-      </a>
-
-    </div>
-
-  </section>
-
-</section>
+</div>

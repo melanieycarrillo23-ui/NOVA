@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Evento } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
@@ -52,7 +52,11 @@ export class ExplorarEventosComponent implements OnInit {
   modalidad = '';
 
 
+  private readonly route = inject(ActivatedRoute);
+  mostrarVolverInicio = signal(false);
+
   ngOnInit(): void {
+    this.mostrarVolverInicio.set(this.route.snapshot.queryParamMap.get('origen') === 'inicio');
 
     this.cargarEventos();
   }

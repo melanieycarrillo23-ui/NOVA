@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  computed,
   inject,
   OnInit,
   signal
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { Evento } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
@@ -25,10 +26,32 @@ export class MisEventosComponent implements OnInit {
   private readonly api = inject(EventosService);
 
   items = signal<Evento[]>([]);
+  filtro = signal('TODOS');
+  filtros = [
+    { valor: 'TODOS', texto: 'Todos' },
+    { valor: 'PUBLICADO', texto: 'Publicados vigentes' },
+    { valor: 'BORRADOR', texto: 'Borradores' },
+    { valor: 'FINALIZADO', texto: 'Finalizados' },
+    { valor: 'CANCELADO', texto: 'Cancelados' }
+  ];
+  visibles = computed(() => this.items().filter(evento =>
+    this.filtro() === 'TODOS' || this.estadoVisible(evento) === this.filtro()
+  ));
+
+  estadoVisible(evento: Evento): string {
+    return evento.estado === 'PUBLICADO' &&
+      new Date(evento.fecha_hora_fin).getTime() <= Date.now()
+      ? 'FINALIZADO' : evento.estado;
+  }
+
   cargando = signal(true);
   error = signal('');
 
+  private readonly route = inject(ActivatedRoute);
+  mostrarVolverInicio = signal(false);
+
   ngOnInit(): void {
+    this.mostrarVolverInicio.set(this.route.snapshot.queryParamMap.get('origen') === 'inicio');
     this.cargarEventos();
   }
 

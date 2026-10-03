@@ -1,0 +1,8 @@
+node_modules
+dist
+.angular
+out-tsc
+.git
+.env
+.env.*
+npm-debug.log*

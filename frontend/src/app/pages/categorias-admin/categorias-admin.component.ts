@@ -6,6 +6,7 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { CategoriaEvento } from '../../models/models';
 import { EventosService } from '../../services/eventos.service';
@@ -16,7 +17,8 @@ import { EventosService } from '../../services/eventos.service';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    RouterLink
   ],
   templateUrl: './categorias-admin.component.html',
   styleUrl: './categorias-admin.component.css'
@@ -40,7 +42,11 @@ export class CategoriasAdminComponent implements OnInit {
   error = signal('');
 
 
+  private readonly route = inject(ActivatedRoute);
+  mostrarVolverInicio = signal(false);
+
   ngOnInit(): void {
+    this.mostrarVolverInicio.set(this.route.snapshot.queryParamMap.get('origen') === 'inicio');
 
     this.cargar();
   }

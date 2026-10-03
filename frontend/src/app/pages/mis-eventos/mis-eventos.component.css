@@ -1,3 +1,19 @@
+.back-link {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.back-link:hover,
+.back-link:focus-visible {
+  color: #fff;
+}
+
 .my-events-page {
   display: flex;
   flex-direction: column;
@@ -282,3 +298,4 @@
     padding: 9px 0;
   }
 }
+.event-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 12px; }

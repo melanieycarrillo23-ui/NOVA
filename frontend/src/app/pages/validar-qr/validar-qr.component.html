@@ -1,14 +1,33 @@
 <section class="validation-page">
 
-  <button
-    *ngIf="mostrarVolverEventosAsignados()"
-    type="button"
-    class="back-link"
-    (click)="volver()"
+  <ng-container
+    *ngIf="
+      mostrarVolverEventosAsignados() ||
+      mostrarVolverInicio()
+    "
   >
-    <span aria-hidden="true">&larr;</span>
-    Volver a eventos asignados
-  </button>
+
+    <button
+      *ngIf="mostrarVolverEventosAsignados()"
+      type="button"
+      class="back-link"
+      (click)="volver()"
+    >
+      <span aria-hidden="true">&larr;</span>
+      Volver a eventos asignados
+    </button>
+
+    <button
+      *ngIf="mostrarVolverInicio()"
+      type="button"
+      class="back-link"
+      (click)="volver()"
+    >
+      <span aria-hidden="true">&larr;</span>
+      Volver al inicio
+    </button>
+
+  </ng-container>
 
 
   <header class="page-header">

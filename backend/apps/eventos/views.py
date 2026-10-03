@@ -7,11 +7,13 @@ import qrcode
 from django.core import signing
 from django.db import transaction
 from django.db.models import Count, Q
+from django.db.models.deletion import ProtectedError
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -41,7 +43,9 @@ from .permissions import (
     es_admin,
     es_organizador_evento,
     es_staff_evento,
+    filtrar_eventos_visibles,
 )
+from .validaciones import validar_periodo_inscripcion
 
 from .serializers import (
     AsignarMiembroEquipoSerializer,
@@ -316,53 +320,21 @@ class EventoViewSet(
 
         usuario = self.request.user
 
-        # -------------------------------------------------
-        # VISIBILIDAD DE LOS EVENTOS
-        # -------------------------------------------------
-
-        if (
-            usuario.is_authenticated
-            and es_admin(usuario)
-        ):
-            qs_visible = qs
-
-        elif self.action in (
-            'list',
-            'retrieve',
-        ):
-            publico = Q(
-                estado=Evento.Estado.PUBLICADO,
-                visibilidad=Evento.Visibilidad.PUBLICO,
-            )
-
-            if usuario.is_authenticated:
-                qs_visible = (
-                    qs.filter(
-                        publico
-                        | Q(
-                            creado_por=usuario
-                        )
-                        | Q(
-                            equipo__usuario=usuario
-                        )
-                    )
-                    .distinct()
-                )
-
-            else:
-                qs_visible = qs.filter(
-                    publico
-                )
-
+        if self.action in ('list', 'retrieve', 'inscribirse'):
+            qs_visible = filtrar_eventos_visibles(qs, usuario)
         else:
             qs_visible = qs
-
 
         # -------------------------------------------------
         # FILTROS PARA EXPLORAR EVENTOS
         # -------------------------------------------------
 
         if self.action == 'list':
+            # El catálogo muestra eventos publicados que todavía no han terminado.
+            qs_visible = qs_visible.filter(
+                estado=Evento.Estado.PUBLICADO,
+                fecha_hora_fin__gt=timezone.now(),
+            )
 
             busqueda = (
                 self.request
@@ -524,11 +496,15 @@ class EventoViewSet(
             request=self.request,
         )
 
+    @transaction.atomic
     def perform_update(
         self,
         serializer
     ):
         evento = self.get_object()
+        evento = Evento.objects.select_for_update().get(pk=evento.pk)
+        serializer.instance = evento
+        serializer.validate(serializer.validated_data)
 
         if not usuario_tiene_permiso(
             self.request.user,
@@ -556,6 +532,11 @@ class EventoViewSet(
                 'este evento.'
             )
 
+        capacidad = serializer.validated_data.get('capacidad', evento.capacidad)
+        inscritos = evento.inscripciones.filter(estado=Inscripcion.Estado.CONFIRMADA).count()
+        if capacidad is not None and capacidad < inscritos:
+            raise ValidationError({'detail': 'La capacidad no puede ser menor que el número de inscritos.'})
+
         evento_actualizado = (
             serializer.save()
         )
@@ -574,6 +555,7 @@ class EventoViewSet(
             request=self.request,
         )
 
+    @transaction.atomic
     def perform_destroy(
         self,
         instance
@@ -603,6 +585,18 @@ class EventoViewSet(
                 'No puedes eliminar '
                 'este evento.'
             )
+
+        instance = Evento.objects.select_for_update().get(pk=instance.pk)
+        if instance.estado != Evento.Estado.BORRADOR:
+            raise ValidationError({'detail':
+                'Solo puedes eliminar borradores sin registros. '
+                'Si el evento no se realizará, cambia su estado a CANCELADO. '
+                'Los eventos finalizados se conservan como historial.'})
+        if (instance.inscripciones.exists() or instance.escaneos.exists()
+                or instance.notificaciones.exists()):
+            raise ValidationError({'detail':
+                'Este evento tiene registros asociados y no se puede eliminar. '
+                'Consérvalo como historial o cambia su estado a CANCELADO.'})
 
         registrar_actividad(
             usuario=self.request.user,
@@ -1007,6 +1001,7 @@ class EventoViewSet(
         pk=None
     ):
         evento = self.get_object()
+        evento = Evento.objects.select_for_update().get(pk=evento.pk)
 
         if not usuario_tiene_permiso(
             request.user,
@@ -1033,52 +1028,7 @@ class EventoViewSet(
             raise_exception=True
         )
 
-        if (
-            evento.estado
-            != Evento.Estado.PUBLICADO
-        ):
-            return Response(
-                {
-                    'detail':
-                        'El evento no está '
-                        'disponible para '
-                        'inscripciones.'
-                },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
-            )
-
-        ahora = timezone.now()
-
-        if (
-            evento.inicio_inscripciones
-            and ahora
-            < evento.inicio_inscripciones
-        ):
-            return Response(
-                {
-                    'detail':
-                        'Las inscripciones '
-                        'aún no han iniciado.'
-                },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
-            )
-
-        if (
-            evento.cierre_inscripciones
-            and ahora
-            > evento.cierre_inscripciones
-        ):
-            return Response(
-                {
-                    'detail':
-                        'Las inscripciones '
-                        'ya finalizaron.'
-                },
-                status=
-                    status.HTTP_400_BAD_REQUEST,
-            )
+        validar_periodo_inscripcion(evento)
 
         inscritos = (
             evento.inscripciones
@@ -1091,7 +1041,7 @@ class EventoViewSet(
         )
 
         if (
-            evento.capacidad
+            evento.capacidad is not None
             and inscritos
             >= evento.capacidad
         ):
@@ -1132,6 +1082,8 @@ class EventoViewSet(
                     status.HTTP_400_BAD_REQUEST,
             )
 
+        validar_periodo_inscripcion(evento, tipo)
+
         entradas_tipo = (
             tipo.entradas
             .exclude(
@@ -1143,7 +1095,7 @@ class EventoViewSet(
         )
 
         if (
-            tipo.cupo
+            tipo.cupo is not None
             and entradas_tipo
             >= tipo.cupo
         ):
@@ -1589,6 +1541,7 @@ class EventoViewSet(
         pk=None
     ):
         evento = self.get_object()
+        evento = Evento.objects.select_for_update().get(pk=evento.pk)
 
         if not es_organizador_evento(
             request.user,
@@ -1604,6 +1557,8 @@ class EventoViewSet(
                 status=
                     status.HTTP_403_FORBIDDEN,
             )
+
+        validar_periodo_inscripcion(evento)
 
         archivo = request.FILES.get(
             'archivo'
@@ -1759,18 +1714,12 @@ class EventoViewSet(
             numero_fila += 1
 
             correo = (
-                fila.get(
-                    columna_correo,
-                    ''
-                )
+                (fila.get(columna_correo) or '')
                 .strip()
             )
 
             tipo_nombre = (
-                fila.get(
-                    columna_tipo,
-                    ''
-                )
+                (fila.get(columna_tipo) or '')
                 .strip()
             )
 
@@ -1865,6 +1814,16 @@ class EventoViewSet(
 
                 continue
 
+            try:
+                validar_periodo_inscripcion(evento, tipo)
+            except ValidationError as error:
+                errores.append({
+                    'fila': numero_fila,
+                    'correo': correo,
+                    'detalle': str(error.detail['detail']),
+                })
+                continue
+
             inscripcion = (
                 Inscripcion.objects
                 .filter(
@@ -1908,7 +1867,7 @@ class EventoViewSet(
             )
 
             if (
-                evento.capacidad
+                evento.capacidad is not None
                 and inscritos_actuales
                 >= evento.capacidad
             ):
@@ -1937,7 +1896,7 @@ class EventoViewSet(
             )
 
             if (
-                tipo.cupo
+                tipo.cupo is not None
                 and entradas_tipo
                 >= tipo.cupo
             ):
@@ -2127,7 +2086,9 @@ class TipoEntradaViewSet(
     )
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().filter(
+            evento__in=filtrar_eventos_visibles(Evento.objects.all(), self.request.user)
+        )
 
         evento_id = (
             self.request
@@ -2198,11 +2159,16 @@ class TipoEntradaViewSet(
             request=self.request,
         )
 
+    @transaction.atomic
     def perform_update(
         self,
         serializer
     ):
         actual = self.get_object()
+        Evento.objects.select_for_update().get(pk=actual.evento_id)
+        actual = TipoEntrada.objects.get(pk=actual.pk)
+        serializer.instance = actual
+        serializer.validate(serializer.validated_data)
 
         destino = (
             serializer.validated_data
@@ -2232,6 +2198,11 @@ class TipoEntradaViewSet(
                 'entradas de este evento.'
             )
 
+        cupo = serializer.validated_data.get('cupo', actual.cupo)
+        emitidas = actual.entradas.exclude(estado=Entrada.Estado.CANCELADA).count()
+        if cupo is not None and cupo < emitidas:
+            raise ValidationError({'detail': 'El cupo no puede ser menor que el número de entradas emitidas.'})
+
         tipo = serializer.save()
 
         registrar_actividad(
@@ -2252,6 +2223,7 @@ class TipoEntradaViewSet(
             request=self.request,
         )
 
+    @transaction.atomic
     def perform_destroy(
         self,
         instance
@@ -2270,11 +2242,21 @@ class TipoEntradaViewSet(
                 'de este evento.'
             )
 
+        tipo_id = instance.pk
+        Evento.objects.select_for_update().get(pk=instance.evento_id)
+        try:
+            with transaction.atomic():
+                instance.delete()
+        except ProtectedError:
+            raise ValidationError({
+                'detail': 'No puedes eliminar este tipo de entrada porque ya tiene entradas emitidas. Puedes desactivarlo.'
+            })
+
         registrar_actividad(
             usuario=self.request.user,
             accion='TIPO_ENTRADA_ELIMINADO',
             tipo_entidad='TipoEntrada',
-            entidad_id=instance.id,
+            entidad_id=tipo_id,
             metadatos={
                 'evento_id':
                     instance.evento_id,
@@ -2288,7 +2270,6 @@ class TipoEntradaViewSet(
             request=self.request,
         )
 
-        instance.delete()
 
 
 class MiembroEquipoEventoViewSet(
@@ -2301,7 +2282,7 @@ class MiembroEquipoEventoViewSet(
             'usuario',
             'rol',
         )
-        .all()
+        .order_by('id')
     )
 
     serializer_class = (
@@ -2767,9 +2748,8 @@ class InscripcionViewSet(
     ):
         inscripcion = self.get_object()
 
-        evento = (
-            inscripcion.evento
-        )
+        evento = Evento.objects.select_for_update().get(pk=inscripcion.evento_id)
+        inscripcion = Inscripcion.objects.select_for_update().get(pk=inscripcion.pk)
 
         if (
             inscripcion.estado
@@ -3085,7 +3065,7 @@ class EscanearQRView(APIView):
 
         try:
             evento = (
-                Evento.objects.get(
+                Evento.objects.select_for_update().get(
                     id=evento_id
                 )
             )
@@ -3296,6 +3276,26 @@ class EscanearQRView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
 
+        elif evento.estado == Evento.Estado.CANCELADO:
+            resultado = EscaneoEntrada.Resultado.CANCELADO
+            http_status = status.HTTP_400_BAD_REQUEST
+            detalle = 'El evento está cancelado.'
+
+        elif evento.estado == Evento.Estado.FINALIZADO:
+            resultado = EscaneoEntrada.Resultado.EXPIRADO
+            http_status = status.HTTP_400_BAD_REQUEST
+            detalle = 'El evento ya finalizó.'
+
+        elif evento.estado != Evento.Estado.PUBLICADO:
+            resultado = EscaneoEntrada.Resultado.INVALIDO
+            http_status = status.HTTP_400_BAD_REQUEST
+            detalle = 'El evento no está habilitado para validar entradas.'
+
+        elif entrada.inscripcion.estado != Inscripcion.Estado.CONFIRMADA:
+            resultado = EscaneoEntrada.Resultado.CANCELADO
+            http_status = status.HTTP_400_BAD_REQUEST
+            detalle = 'La inscripción no está confirmada.'
+
         elif (
             ahora
             < evento.fecha_hora_inicio
@@ -3317,7 +3317,7 @@ class EscanearQRView(APIView):
 
         elif (
             ahora
-            > evento.fecha_hora_fin
+            >= evento.fecha_hora_fin
         ):
             resultado = (
                 EscaneoEntrada

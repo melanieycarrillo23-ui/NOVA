@@ -1,3 +1,32 @@
+.back-link {
+  width: fit-content;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 2px;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
+
+  color: var(--muted);
+
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: color 0.2s ease;
+}
+
+.back-link:hover {
+  color: #fff;
+}
+
+
 .attendees-page {
   display: flex;
   flex-direction: column;
