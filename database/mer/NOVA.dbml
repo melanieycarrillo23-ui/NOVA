@@ -1,16 +1,17 @@
-// NOVA - MER en español
-// PostgreSQL + Django REST Framework
+// NOVA — Modelo relacional
+// Tablas principales de autenticación, eventos y auditoría.
+// Los valores iniciales y las reglas de negocio se gestionan en Django.
 
 Table autenticacion.usuarios {
   id bigint [pk, increment]
   nombre_completo varchar(150) [not null]
   correo varchar(254) [not null, unique]
-  password varchar(128) [not null]
-  telefono varchar(30)
-  url_imagen_perfil varchar(500)
-  estado varchar(20) [not null, default: 'ACTIVO']
-  es_staff_django boolean [not null, default: false]
-  es_superusuario boolean [not null, default: false]
+  password varchar(128) [not null, note: 'Contraseña almacenada mediante hash']
+  telefono varchar(30) [not null]
+  url_imagen_perfil varchar(500) [not null]
+  estado varchar(20) [not null]
+  es_staff_django boolean [not null]
+  es_superusuario boolean [not null]
   last_login timestamptz
   creado_en timestamptz [not null]
   actualizado_en timestamptz [not null]
@@ -20,7 +21,7 @@ Table autenticacion.roles {
   id bigint [pk, increment]
   codigo varchar(30) [not null, unique]
   nombre varchar(60) [not null]
-  descripcion varchar(255)
+  descripcion varchar(255) [not null]
   creado_en timestamptz [not null]
 }
 
@@ -28,7 +29,7 @@ Table autenticacion.permisos {
   id bigint [pk, increment]
   codigo varchar(80) [not null, unique]
   nombre varchar(100) [not null]
-  descripcion varchar(255)
+  descripcion varchar(255) [not null]
   creado_en timestamptz [not null]
 }
 
@@ -37,14 +38,20 @@ Table autenticacion.usuario_roles {
   usuario_id bigint [not null]
   rol_id bigint [not null]
   asignado_en timestamptz [not null]
-  Indexes { (usuario_id, rol_id) [unique] }
+
+  Indexes {
+    (usuario_id, rol_id) [unique]
+  }
 }
 
 Table autenticacion.rol_permisos {
   id bigint [pk, increment]
   rol_id bigint [not null]
   permiso_id bigint [not null]
-  Indexes { (rol_id, permiso_id) [unique] }
+
+  Indexes {
+    (rol_id, permiso_id) [unique]
+  }
 }
 
 Table autenticacion.sesiones_refresh {
@@ -53,26 +60,26 @@ Table autenticacion.sesiones_refresh {
   hash_token varchar(255) [not null, unique]
   expira_en timestamptz [not null]
   revocado_en timestamptz
-  agente_usuario varchar(500)
-  direccion_ip varchar(45)
+  agente_usuario varchar(500) [not null]
+  direccion_ip inet
   creado_en timestamptz [not null]
 }
 
 Table eventos.categorias_evento {
   id bigint [pk, increment]
   nombre varchar(80) [not null, unique]
-  descripcion varchar(255)
-  esta_activa boolean [not null, default: true]
+  descripcion varchar(255) [not null]
+  esta_activa boolean [not null]
   creado_en timestamptz [not null]
 }
 
 Table eventos.lugares {
   id bigint [pk, increment]
   nombre varchar(150) [not null]
-  direccion varchar(255)
-  ciudad varchar(100)
-  region varchar(100)
-  codigo_pais varchar(3)
+  direccion varchar(255) [not null]
+  ciudad varchar(100) [not null]
+  region varchar(100) [not null]
+  codigo_pais varchar(3) [not null]
   latitud decimal(9,6)
   longitud decimal(9,6)
   creado_en timestamptz [not null]
@@ -86,18 +93,18 @@ Table eventos.eventos {
   lugar_id bigint
   nombre varchar(180) [not null]
   identificador_url varchar(220) [not null, unique]
-  descripcion_corta varchar(300)
-  descripcion text
+  descripcion_corta varchar(300) [not null]
+  descripcion text [not null]
   modalidad varchar(20) [not null]
   visibilidad varchar(20) [not null]
   estado varchar(20) [not null]
-  capacidad int
+  capacidad int [note: 'Valor no negativo; NULL indica que no se definió un límite']
   fecha_hora_inicio timestamptz [not null]
   fecha_hora_fin timestamptz [not null]
   inicio_inscripciones timestamptz
   cierre_inscripciones timestamptz
-  url_virtual varchar(500)
-  url_imagen_portada varchar(500)
+  url_virtual varchar(500) [not null]
+  url_imagen_portada varchar(500) [not null]
   creado_en timestamptz [not null]
   actualizado_en timestamptz [not null]
 }
@@ -110,22 +117,28 @@ Table eventos.miembros_equipo_evento {
   asignado_por_id bigint
   estado varchar(20) [not null]
   asignado_en timestamptz [not null]
-  Indexes { (evento_id, usuario_id, rol_id) [unique] }
+
+  Indexes {
+    (evento_id, usuario_id, rol_id) [unique]
+  }
 }
 
 Table eventos.tipos_entrada {
   id bigint [pk, increment]
   evento_id bigint [not null]
   nombre varchar(100) [not null]
-  descripcion varchar(255)
+  descripcion varchar(255) [not null]
   precio decimal(12,2) [not null]
-  cupo int
+  cupo int [note: 'Valor no negativo; NULL indica que no se definió un límite para este tipo']
   inicio_disponibilidad timestamptz
   fin_disponibilidad timestamptz
   estado varchar(20) [not null]
   creado_en timestamptz [not null]
   actualizado_en timestamptz [not null]
-  Indexes { (evento_id, nombre) [unique] }
+
+  Indexes {
+    (evento_id, nombre) [unique]
+  }
 }
 
 Table eventos.inscripciones {
@@ -135,7 +148,10 @@ Table eventos.inscripciones {
   estado varchar(20) [not null]
   inscrito_en timestamptz [not null]
   cancelado_en timestamptz
-  Indexes { (evento_id, usuario_id) [unique] }
+
+  Indexes {
+    (evento_id, usuario_id) [unique]
+  }
 }
 
 Table eventos.entradas {
@@ -155,10 +171,10 @@ Table eventos.escaneos_entrada {
   evento_id bigint [not null]
   entrada_id bigint
   escaneado_por_id bigint [not null]
-  hash_token_escaneado varchar(255)
+  hash_token_escaneado varchar(255) [not null]
   resultado varchar(30) [not null]
   escaneado_en timestamptz [not null]
-  informacion_dispositivo varchar(255)
+  informacion_dispositivo varchar(255) [not null]
 }
 
 Table eventos.asistencias {
@@ -176,7 +192,7 @@ Table eventos.notificaciones {
   evento_id bigint
   titulo varchar(150) [not null]
   contenido text [not null]
-  tipo varchar(30)
+  tipo varchar(30) [not null]
   esta_leida boolean [not null]
   creado_en timestamptz [not null]
   leida_en timestamptz
@@ -186,12 +202,14 @@ Table auditoria.registros_actividad {
   id bigint [pk, increment]
   usuario_actor_id bigint
   accion varchar(100) [not null]
-  tipo_entidad varchar(80)
+  tipo_entidad varchar(80) [not null]
   entidad_id bigint
   metadatos jsonb
-  direccion_ip varchar(45)
+  direccion_ip inet
   creado_en timestamptz [not null]
 }
+
+// Roles y permisos
 
 Ref: autenticacion.usuario_roles.usuario_id > autenticacion.usuarios.id
 Ref: autenticacion.usuario_roles.rol_id > autenticacion.roles.id
@@ -199,24 +217,41 @@ Ref: autenticacion.rol_permisos.rol_id > autenticacion.roles.id
 Ref: autenticacion.rol_permisos.permiso_id > autenticacion.permisos.id
 Ref: autenticacion.sesiones_refresh.usuario_id > autenticacion.usuarios.id
 
+// Eventos y equipo
+
 Ref: eventos.eventos.creado_por_id > autenticacion.usuarios.id
 Ref: eventos.eventos.categoria_id > eventos.categorias_evento.id
 Ref: eventos.eventos.lugar_id > eventos.lugares.id
+
 Ref: eventos.miembros_equipo_evento.evento_id > eventos.eventos.id
 Ref: eventos.miembros_equipo_evento.usuario_id > autenticacion.usuarios.id
 Ref: eventos.miembros_equipo_evento.rol_id > autenticacion.roles.id
 Ref: eventos.miembros_equipo_evento.asignado_por_id > autenticacion.usuarios.id
+
+// Tipos de entrada e inscripciones
+
 Ref: eventos.tipos_entrada.evento_id > eventos.eventos.id
 Ref: eventos.inscripciones.evento_id > eventos.eventos.id
 Ref: eventos.inscripciones.usuario_id > autenticacion.usuarios.id
-Ref: eventos.entradas.inscripcion_id > eventos.inscripciones.id
+
+// Una inscripción puede tener como máximo una entrada.
+// En estas referencias uno a uno, la FK está a la derecha.
+
+Ref: eventos.inscripciones.id - eventos.entradas.inscripcion_id
 Ref: eventos.entradas.tipo_entrada_id > eventos.tipos_entrada.id
+
+// Escaneos y asistencia
+
 Ref: eventos.escaneos_entrada.evento_id > eventos.eventos.id
 Ref: eventos.escaneos_entrada.entrada_id > eventos.entradas.id
 Ref: eventos.escaneos_entrada.escaneado_por_id > autenticacion.usuarios.id
-Ref: eventos.asistencias.entrada_id > eventos.entradas.id
-Ref: eventos.asistencias.escaneo_valido_id > eventos.escaneos_entrada.id
+
+Ref: eventos.entradas.id - eventos.asistencias.entrada_id
+Ref: eventos.escaneos_entrada.id - eventos.asistencias.escaneo_valido_id
 Ref: eventos.asistencias.registrado_por_id > autenticacion.usuarios.id
+
+// Notificaciones y auditoría
+
 Ref: eventos.notificaciones.usuario_id > autenticacion.usuarios.id
 Ref: eventos.notificaciones.evento_id > eventos.eventos.id
 Ref: auditoria.registros_actividad.usuario_actor_id > autenticacion.usuarios.id
