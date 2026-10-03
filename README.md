@@ -1,68 +1,152 @@
-# NOVA — Gestión de eventos con entradas QR
+# NOVA — Sistema de eventos con entradas QR
 
-NOVA permite crear eventos, administrar equipos, inscribir asistentes, emitir entradas QR, registrar asistencia y consultar reportes. Utiliza Angular 18, Django REST Framework, PostgreSQL 17 y JWT. Docker Compose ejecuta PostgreSQL, el backend y el frontend servido por Nginx.
+NOVA es una plataforma web para la gestión de eventos, inscripciones, entradas QR, validación de entradas, control de asistencia y generación de reportes.
 
-## Aplicar esta versión a tu proyecto actual
+El sistema incorpora autenticación, roles, permisos, auditoría, filtros, paginación, importación y exportación de asistentes.
 
-Esta entrega contiene el código completo basado en NOVA(1).zip y las correcciones integradas. No necesitas aplicar además NOVA_correcciones.zip.
+## Stack tecnológico
 
-1. Conserva una copia de tu carpeta actual y el respaldo nova_revision.dump.
-2. En la terminal de tu carpeta original NOVA, donde está docker-compose.yml, ejecuta:
+- Frontend: Angular 18
+- Backend: Django REST Framework
+- Base de datos: PostgreSQL 17
+- Autenticación: JWT + Refresh Token
+- Generación y validación de QR
+- Documentación de API: Swagger / OpenAPI
+- Servidor frontend: Nginx
+- Contenedores: Docker Compose
 
-```powershell
-docker compose stop backend frontend
-```
+## Roles
 
-3. Descomprime la entrega en otra ubicación. Abre la carpeta NOVA de la entrega y copia TODO su contenido dentro de tu carpeta original NOVA. Acepta combinar carpetas y reemplazar archivos con el mismo nombre. No borres tu carpeta original: allí permanecen tu .env y tu configuración de trabajo.
-4. Sigue usando la misma carpeta original. Ejecuta:
+NOVA utiliza cuatro roles globales:
 
-```powershell
-docker compose up -d --build backend frontend
-docker compose exec backend python manage.py check
-```
+- ADMIN: administra la plataforma y sus usuarios.
+- ORGANIZADOR: crea y administra eventos.
+- STAFF: participa en la operación de eventos asignados.
+- USUARIO: explora eventos, realiza inscripciones y consulta sus entradas.
 
-5. Abre http://localhost:4200, recarga con Ctrl + F5 y vuelve a iniciar sesión.
+Una misma cuenta puede tener varios roles.
 
-Este procedimiento conserva la base de datos existente. No hace falta restaurar el dump ni crear migraciones nuevas. La entrega no incluye tu .env, el historial Git, node_modules ni entornos virtuales: conserva los originales y Docker construirá las dependencias que necesita.
+Además, cada evento puede tener miembros de equipo con funciones específicas de ORGANIZADOR o STAFF.
 
-Si un servicio no inicia, consulta:
+## Funcionalidades principales
 
-```powershell
-docker compose ps
-docker compose logs --tail=80 backend frontend
-```
+### Autenticación
 
-## Estructura
+- Registro de usuarios.
+- Inicio de sesión.
+- JWT Access Token.
+- Refresh Token.
+- Rotación de refresh tokens.
+- Blacklist de tokens.
+- Cierre de sesión.
+- Gestión del perfil.
 
-- backend/: configuración Django y aplicaciones cuentas, eventos y auditoria.
-- frontend/: aplicación Angular, configuración de Nginx y proxy para desarrollo local.
-- database/: creación de esquemas y diagrama de la base de datos.
-- docker-compose.yml: servicios, conexiones y volumen de PostgreSQL.
-- .env.example: ejemplo de configuración; no reemplaza tu .env existente.
-- CAMBIOS.md: correcciones aplicadas y comprobaciones realizadas.
+### Gestión de usuarios
 
-La carpeta tienda-ropa-web no está incluida en el ZIP recibido ni pertenece a la configuración de NOVA. En VS Code, usa Archivo > Abrir carpeta y selecciona tu carpeta original NOVA para trabajar únicamente en este proyecto.
+- Consulta de usuarios.
+- Búsqueda por nombre o correo.
+- Filtro por estado.
+- Consulta de roles.
+- Cambio de estado de cuentas.
+- Protección para impedir que un administrador cambie el estado de su propia cuenta.
+
+### Gestión de eventos
+
+- Creación de eventos.
+- Consulta de eventos.
+- Edición de eventos.
+- Eliminación de eventos.
+- Publicación de eventos.
+- Categorías.
+- Lugares.
+- Modalidades.
+- Tipos de entrada.
+- Gestión del equipo del evento.
+
+### Exploración de eventos
+
+Los usuarios pueden consultar los eventos disponibles mediante:
+
+- Búsqueda por texto.
+- Filtro por modalidad.
+- Paginación.
+- Ordenamiento por fecha.
+
+### Inscripciones
+
+- Inscripción a eventos.
+- Consulta de inscripciones propias.
+- Cancelación de inscripciones.
+- Reactivación cuando corresponde.
+- Control de cupos.
+
+### Entradas y QR
+
+- Generación de entradas.
+- Código público de entrada.
+- Generación de código QR.
+- Consulta de entradas propias.
+- Validación de entradas.
+
+### Validación y asistencia
+
+La validación de una entrada comprueba:
+
+- Que la entrada exista.
+- Que pertenezca al evento correspondiente.
+- Que se encuentre activa.
+- Que el evento esté dentro de su periodo válido.
+- Que la entrada no haya sido utilizada previamente.
+
+Cuando la validación es correcta se registra la asistencia.
+
+### Gestión de asistentes
+
+- Consulta de asistentes.
+- Búsqueda de asistentes.
+- Filtros.
+- Paginación.
+- Importación mediante CSV.
+- Exportación mediante CSV.
+
+### Reportes
+
+NOVA permite consultar información del evento relacionada con:
+
+- Inscripciones.
+- Entradas.
+- Asistencia.
+- Estados.
+- Tipos de entrada.
+- Información general del evento.
+
+### Auditoría
+
+El sistema registra acciones relevantes realizadas por los usuarios, incluyendo acciones relacionadas con:
+
+- Usuarios.
+- Eventos.
+- Inscripciones.
+- Entradas.
+- Validaciones.
+- Equipo de eventos.
+- Reportes.
 
 ## Roles y permisos
 
-Los roles globales son ADMIN, ORGANIZADOR, STAFF y USUARIO. Una cuenta puede tener varios. Los roles habilitan funciones; los miembros del equipo determinan en qué eventos puede operar un organizador o un integrante del personal. El administrador puede gestionar la plataforma.
+Los permisos se manejan mediante roles globales y permisos específicos.
 
-## Desarrollo local de Angular
+Algunos permisos utilizados por el sistema son:
 
-Si Django ya está ejecutándose en http://127.0.0.1:8000, puedes iniciar Angular fuera de Docker:
-
-```powershell
-cd frontend
-npm ci
-npm start
-```
-
-proxy.conf.json envía las solicitudes /api al backend local. Nginx mantiene su propio proxy cuando ejecutas el frontend en Docker. Usa un solo frontend en el puerto 4200 a la vez.
-
-## Comprobación manual
-
-- Inscríbete en un evento publicado con fechas vigentes y descarga el QR.
-- Cancela la inscripción y vuelve a inscribirte antes del inicio.
-- Valida la entrada durante el horario del evento: el primer intento registra asistencia y el segundo se rechaza.
-- Un evento cancelado o finalizado no admite validación válida ni nuevas inscripciones.
-- Un tipo de entrada con entradas emitidas se puede desactivar, pero no eliminar.
+```text
+usuarios.gestionar
+eventos.ver
+eventos.crear
+eventos.editar_propios
+equipo.gestionar
+inscripciones.crear
+inscripciones.ver_evento
+entradas.ver_propias
+entradas.validar
+reportes.ver_evento
+reportes.ver_global
