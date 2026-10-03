@@ -46,3 +46,28 @@
   outline-offset: 4px;
   border-radius: 4px;
 }
+/* Navegación de regreso: flecha y texto sin fondo. */
+a.back-link,
+button.back-link,
+a.back-link:hover,
+button.back-link:hover,
+a.back-link:focus,
+button.back-link:focus,
+a.back-link:active,
+button.back-link:active {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  color: var(--secondary);
+  padding: 0;
+  appearance: none;
+}
+a.back-link:hover,
+button.back-link:hover {
+  color: var(--primary);
+}
+a.back-link:focus-visible,
+button.back-link:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 4px;
+}

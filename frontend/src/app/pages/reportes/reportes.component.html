@@ -37,3 +37,44 @@
     </div>
 
   </header>
+  <div class="card selector-card">
+    <div class="selector-row">
+      <div class="field selector-field">
+        <label for="evento-reporte">Evento</label>
+        <select id="evento-reporte" [(ngModel)]="eventoId" (ngModelChange)="reporte.set(null)"
+          [disabled]="cargandoEventos() || cargando()">
+          <option [ngValue]="null">Selecciona un evento</option>
+          <option *ngFor="let evento of eventos()" [ngValue]="evento.id">{{ evento.nombre }}</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn-primary selector-button"
+        [disabled]="!eventoId || cargando() || cargandoEventos()" (click)="consultar()">Consultar reporte</button>
+    </div>
+  </div>
+  <p *ngIf="cargandoEventos()" role="status">Cargando eventos...</p>
+  <p *ngIf="!cargandoEventos() && !eventos().length && !error()" class="empty">No tienes eventos disponibles para consultar reportes.</p>
+  <p *ngIf="error()" class="error" role="alert">{{ error() }}</p>
+  <p *ngIf="cargando()" role="status">Generando reporte...</p>
+  <div *ngIf="reporte() as datos" class="report-content">
+    <div class="card"><h2>{{ datos.evento.nombre }}</h2></div>
+    <div class="grid grid-4 report-metrics">
+      <div class="card kpi"><span class="kpi-label">Inscritos</span><strong class="kpi-value">{{ datos.inscritos }}</strong></div>
+      <div class="card kpi"><span class="kpi-label">Asistieron</span><strong class="kpi-value">{{ datos.asistieron }}</strong></div>
+      <div class="card kpi"><span class="kpi-label">Sin asistencia registrada</span><strong class="kpi-value">{{ datos.ausentes }}</strong></div>
+      <div class="card kpi"><span class="kpi-label">Asistencia</span><strong class="kpi-value">{{ datos.porcentaje_asistencia | number:'1.0-1' }} %</strong></div>
+    </div>
+    <section class="card">
+      <h2>Tipos de entrada</h2>
+      <div class="table-wrap" *ngIf="datos.tipos_entrada.length; else sinTipos">
+        <table class="table">
+          <thead><tr><th>Tipo</th><th>Emitidas</th><th>Usadas</th><th>Uso</th></tr></thead>
+          <tbody><tr *ngFor="let tipo of datos.tipos_entrada">
+            <td>{{ tipo.nombre }}</td><td>{{ tipo.emitidas }}</td><td>{{ tipo.usadas }}</td>
+            <td>{{ porcentajeTipo(tipo.usadas, tipo.emitidas) | number:'1.0-1' }} %</td>
+          </tr></tbody>
+        </table>
+      </div>
+      <ng-template #sinTipos><p class="empty">El evento no tiene tipos de entrada.</p></ng-template>
+    </section>
+  </div>
+</section>

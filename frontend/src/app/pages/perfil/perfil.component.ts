@@ -59,6 +59,11 @@ export class PerfilComponent implements OnInit {
       return;
     }
 
+    if (this.telefono && !/^3[0-9]{9}$/.test(this.telefono)) {
+      this.error.set('Ingresa un celular de 10 dígitos que empiece por 3, sin +57, espacios ni letras.');
+      return;
+    }
+
     this.guardando.set(true);
     this.mensaje.set('');
     this.error.set('');

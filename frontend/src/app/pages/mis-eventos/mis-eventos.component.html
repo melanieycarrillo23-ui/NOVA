@@ -35,17 +35,22 @@
 
   </header>
 
-  <div class="event-filters" aria-label="Filtrar eventos por estado">
-    <button *ngFor="let opcion of filtros" type="button"
-      class="btn" [class.btn-primary]="filtro() === opcion.valor"
-      [attr.aria-pressed]="filtro() === opcion.valor"
-      (click)="filtro.set(opcion.valor)">
-      {{ opcion.texto }}
-    </button>
+  <div class="event-filters">
+    <div class="field search-field">
+      <label for="buscar-mis-eventos">Buscar evento</label>
+      <input id="buscar-mis-eventos" type="search" placeholder="Buscar por nombre"
+        [value]="busqueda()" (input)="busqueda.set($any($event.target).value)">
+    </div>
+    <div class="field state-field">
+      <label for="estado-mis-eventos">Estado</label>
+      <select id="estado-mis-eventos" [value]="filtro()"
+        (change)="filtro.set($any($event.target).value)">
+        <option *ngFor="let opcion of filtros" [value]="opcion.valor">{{ opcion.texto }}</option>
+      </select>
+    </div>
   </div>
-  <p class="page-subtitle">Los eventos publicados cuya fecha de fin ya pasó se muestran como finalizados. Su historial se conserva.</p>
   <p class="empty" *ngIf="!cargando() && items().length && !visibles().length && !error()">
-    No tienes eventos en este estado.
+    No se encontraron eventos con ese nombre y estado.
   </p>
 
 

@@ -298,4 +298,9 @@
     padding: 9px 0;
   }
 }
-.event-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 12px; }
+ .event-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 16px; margin: 20px 0 24px; }
+.event-filters .search-field { flex: 1 1 260px; min-width: 0; }
+.event-filters .state-field { flex: 0 1 230px; }
+@media (max-width: 600px) {
+  .event-filters .search-field, .event-filters .state-field { flex: 1 1 100%; }
+}

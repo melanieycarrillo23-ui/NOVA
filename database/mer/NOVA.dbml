@@ -7,7 +7,7 @@ Table autenticacion.usuarios {
   nombre_completo varchar(150) [not null]
   correo varchar(254) [not null, unique]
   password varchar(128) [not null, note: 'Contraseña almacenada mediante hash']
-  telefono varchar(30) [not null]
+  telefono varchar(10) [not null, note: 'Opcional: admite vacío o exactamente 10 dígitos']
   url_imagen_perfil varchar(500) [not null]
   estado varchar(20) [not null]
   es_staff_django boolean [not null]

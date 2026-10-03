@@ -377,6 +377,10 @@ export class EventosService {
   }
 
 
+  eventosParaReportes() {
+    return this.http.get<Array<{ id: number; nombre: string }>>(`${this.api}/eventos/para-reportes/`);
+  }
+
   reporte(
     eventoId: number
   ) {

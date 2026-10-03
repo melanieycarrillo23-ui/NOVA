@@ -1,4 +1,5 @@
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
 
@@ -30,7 +31,7 @@ class Usuario(AbstractBaseUser):
 
     nombre_completo = models.CharField(max_length=150)
     correo = models.EmailField(max_length=254, unique=True)
-    telefono = models.CharField(max_length=30, blank=True)
+    telefono = models.CharField(max_length=10, blank=True, validators=[RegexValidator(regex=r'\A3[0-9]{9}\Z', message='Ingresa un celular de 10 dígitos que empiece por 3.')])
     url_imagen_perfil = models.URLField(max_length=500, blank=True)
     estado = models.CharField(max_length=20, choices=Estado.choices, default=Estado.ACTIVO, db_index=True)
     es_staff_django = models.BooleanField(default=False)
@@ -46,6 +47,7 @@ class Usuario(AbstractBaseUser):
     class Meta:
         db_table = '"autenticacion"."usuarios"'
         ordering = ['nombre_completo']
+        constraints = [models.CheckConstraint(condition=models.Q(telefono='') | models.Q(telefono__regex=r'\A3[0-9]{9}\Z'), name='ck_usuario_telefono_10_digitos')]
 
     @property
     def is_staff(self):

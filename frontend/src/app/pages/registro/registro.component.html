@@ -288,13 +288,17 @@
 
               <input
                 id="telefono"
+                maxlength="10"
+                inputmode="numeric"
+                pattern="3[0-9]{9}"
                 type="tel"
                 formControlName="telefono"
-                placeholder="Tu número de teléfono"
+                placeholder="Empieza por 3, sin +57"
                 autocomplete="off"
               >
 
             </div>
+            <p class="error" *ngIf="campoInvalido('telefono')">Ingresa un celular de 10 dígitos que empiece por 3, sin +57, espacios ni letras.</p>
 
           </div>
 

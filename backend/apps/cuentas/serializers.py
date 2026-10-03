@@ -4,6 +4,7 @@ from .models import Usuario, Rol, UsuarioRol
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
+    telefono = serializers.RegexField(regex=r'\A3[0-9]{9}\Z', required=False, allow_blank=True, trim_whitespace=False, error_messages={'invalid': 'Ingresa un celular de 10 dígitos que empiece por 3, sin +57, espacios ni letras.'})
     roles = serializers.SerializerMethodField()
 
     class Meta:
@@ -16,6 +17,7 @@ class UsuarioSerializer(serializers.ModelSerializer):
 
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
+    telefono = serializers.RegexField(regex=r'\A3[0-9]{9}\Z', required=False, allow_blank=True, trim_whitespace=False, error_messages={'invalid': 'Ingresa un celular de 10 dígitos que empiece por 3, sin +57, espacios ni letras.'})
     password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:

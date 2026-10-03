@@ -1,6 +1,8 @@
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   inject,
   OnInit,
   signal
@@ -12,11 +14,9 @@ import {
 } from '@angular/router';
 
 import {
-  Evento,
   ReporteEvento
 } from '../../models/models';
 
-import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
 
 
@@ -33,11 +33,12 @@ import { EventosService } from '../../services/eventos.service';
 export class ReportesComponent implements OnInit {
 
   private readonly api = inject(EventosService);
-  private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
-  eventos = signal<Evento[]>([]);
+  private readonly destroyRef = inject(DestroyRef);
+  cargandoEventos = signal(false);
+  eventos = signal<Array<{ id: number; nombre: string }>>([]);
 
   reporte =
     signal<ReporteEvento | null>(null);
@@ -53,16 +54,10 @@ export class ReportesComponent implements OnInit {
 
   ngOnInit(): void {
 
-    const origen =
-      this.route.snapshot
-        .queryParamMap
-        .get('origen');
-
-    this.mostrarVolverInicio =
-      origen === 'inicio';
-
-    this.mostrarVolverMisEventos =
-      origen === 'mis-eventos';
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+      this.mostrarVolverInicio = params.get('origen') === 'inicio';
+      this.mostrarVolverMisEventos = params.get('origen') === 'mis-eventos';
+    });
 
     this.cargarEventos();
   }
@@ -91,51 +86,19 @@ export class ReportesComponent implements OnInit {
   cargarEventos(): void {
 
     this.error.set('');
-
-    if (this.auth.tieneRol('ADMIN')) {
-
-      this.api.listarEventos().subscribe({
-
-        next: respuesta => {
-
-          this.eventos.set(
-            respuesta.results
-          );
-
-          this.seleccionarDesdeUrl();
-        },
-
-        error: () => {
-
-          this.error.set(
-            'No fue posible cargar los eventos.'
-          );
-        }
-      });
-
-      return;
-    }
-
-    this.api.misEventos().subscribe({
-
-      next: respuesta => {
-
-        this.eventos.set(
-          respuesta
-        );
-
+    this.cargandoEventos.set(true);
+    this.api.eventosParaReportes().subscribe({
+      next: eventos => {
+        this.eventos.set(eventos);
+        this.cargandoEventos.set(false);
         this.seleccionarDesdeUrl();
       },
-
-      error: () => {
-
-        this.error.set(
-          'No fue posible cargar tus eventos.'
-        );
+      error: respuesta => {
+        this.cargandoEventos.set(false);
+        this.error.set(respuesta?.error?.detail || 'No fue posible cargar los eventos.');
       }
     });
   }
-
 
   seleccionarDesdeUrl(): void {
 

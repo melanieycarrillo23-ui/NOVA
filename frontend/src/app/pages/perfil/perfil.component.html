@@ -183,9 +183,12 @@
 
           <input
             id="telefono"
+                maxlength="10"
+                inputmode="numeric"
+                pattern="3[0-9]{9}"
             type="tel"
             [(ngModel)]="telefono"
-            placeholder="Número de teléfono"
+            placeholder="Empieza por 3, sin +57"
             autocomplete="tel"
           >
 

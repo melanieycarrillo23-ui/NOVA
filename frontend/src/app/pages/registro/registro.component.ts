@@ -41,7 +41,7 @@ export class RegistroComponent {
       ]
     ],
     telefono: [
-      ''
+      '', Validators.pattern(/^3[0-9]{9}$/)
     ],
     password: [
       '',

@@ -27,6 +27,7 @@ export class MisEventosComponent implements OnInit {
 
   items = signal<Evento[]>([]);
   filtro = signal('TODOS');
+  busqueda = signal('');
   filtros = [
     { valor: 'TODOS', texto: 'Todos' },
     { valor: 'PUBLICADO', texto: 'Publicados vigentes' },
@@ -35,8 +36,13 @@ export class MisEventosComponent implements OnInit {
     { valor: 'CANCELADO', texto: 'Cancelados' }
   ];
   visibles = computed(() => this.items().filter(evento =>
-    this.filtro() === 'TODOS' || this.estadoVisible(evento) === this.filtro()
+    (this.filtro() === 'TODOS' || this.estadoVisible(evento) === this.filtro()) &&
+    this.normalizar(evento.nombre).includes(this.normalizar(this.busqueda().trim()))
   ));
+
+  private normalizar(texto: string): string {
+    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
 
   estadoVisible(evento: Evento): string {
     return evento.estado === 'PUBLICADO' &&

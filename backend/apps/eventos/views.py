@@ -655,6 +655,21 @@ class EventoViewSet(
             ).data
         )
 
+    @action(detail=False, methods=['get'], url_path='para-reportes',
+            permission_classes=[permissions.IsAuthenticated])
+    def para_reportes(self, request):
+        if not usuario_tiene_permiso(request.user, 'reportes.ver_evento'):
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('No tienes permiso para consultar reportes.')
+        qs = Evento.objects.all()
+        if not es_admin(request.user):
+            qs = qs.filter(
+                Q(creado_por=request.user) |
+                Q(equipo__usuario=request.user, equipo__rol__codigo='ORGANIZADOR',
+                  equipo__estado=MiembroEquipoEvento.Estado.ACTIVO)
+            ).distinct()
+        return Response(list(qs.order_by('-fecha_hora_inicio', 'id').values('id', 'nombre')))
+
     @action(
         detail=False,
         methods=['get'],
