@@ -25,7 +25,8 @@ import { EventosService } from '../../services/eventos.service';
     CommonModule,
     RouterLink
   ],
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent implements OnInit {
 

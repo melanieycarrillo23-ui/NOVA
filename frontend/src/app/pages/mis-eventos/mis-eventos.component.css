@@ -304,3 +304,19 @@
 @media (max-width: 600px) {
   .event-filters .search-field, .event-filters .state-field { flex: 1 1 100%; }
 }
+
+
+/* Cada evento ocupa una fila completa del listado. */
+.events-grid { display: flex; flex-direction: column; align-items: stretch; gap: 0; width: 100%; overflow-x: auto; }
+.event-card.card { width: 100%; min-width: 1040px; display: grid; grid-template-columns: 115px minmax(180px,1fr) minmax(350px,1.4fr) auto; align-items: center; gap: 24px; padding: 22px 0; background: transparent; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; box-shadow: none; }
+.event-card.card:hover { transform: none; background: transparent; border-color: var(--border); }
+.event-card-header { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; }
+.event-content { min-height: 0; min-width: 0; }
+.event-content h2,.event-content p { overflow-wrap: anywhere; }
+.event-information { display: grid; grid-template-columns: minmax(160px,1.3fr) minmax(95px,1fr) 70px; gap: 16px; align-items: start; }
+.event-data { min-width: 0; } .event-data strong { overflow-wrap: anywhere; }
+.event-actions { grid-column: auto; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; margin: 0; padding: 0; border: 0; }
+.event-actions .btn { width: auto; white-space: nowrap; padding: 9px 12px; }
+.event-actions .btn-secondary { background: transparent; border-color: transparent; }
+.event-link { width: auto; margin: 0; padding: 0; white-space: nowrap; }
+.event-filters { margin: 0; }
