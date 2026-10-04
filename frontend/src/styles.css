@@ -71,3 +71,13 @@ button.back-link:focus-visible {
   outline: 2px solid var(--cyan);
   outline-offset: 4px;
 }
+
+/* Controles nativos acordes con la interfaz oscura. */
+:root { color-scheme: dark; }
+textarea { overflow-y: auto; }
+textarea, .table-wrap, .events-grid, .nav { scrollbar-width: thin; scrollbar-color: #40516e #0b1426; }
+textarea::-webkit-scrollbar { width: 8px; height: 8px; }
+textarea::-webkit-scrollbar-track { background: #0b1426; }
+textarea::-webkit-scrollbar-thumb { background: #40516e; border: 2px solid #0b1426; border-radius: 8px; }
+textarea::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+textarea::-webkit-scrollbar-corner,textarea::-webkit-resizer { background: #0b1426; }

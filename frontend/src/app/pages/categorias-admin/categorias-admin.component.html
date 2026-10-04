@@ -86,12 +86,11 @@
           Descripción
         </label>
 
-        <textarea
+        <input type="text"
           id="nueva-descripcion"
-          rows="3"
           [(ngModel)]="nuevaDescripcion"
           placeholder="Descripción de la categoría"
-        ></textarea>
+        >
 
       </div>
 
@@ -217,14 +216,13 @@
               Descripción
             </label>
 
-            <textarea
+            <input type="text"
               [id]="'descripcion-categoria-' + categoria.id"
-              rows="3"
               [(ngModel)]="categoria.descripcion"
               [disabled]="
                 procesandoId() === categoria.id
               "
-            ></textarea>
+            >
 
           </div>
 

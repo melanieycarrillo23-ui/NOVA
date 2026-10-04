@@ -386,3 +386,6 @@
     padding: 0 18px;
   }
 }
+.nav-item { display: flex; align-items: center; gap: 11px; }
+.nav-icon { width: 18px; height: 18px; flex: 0 0 18px; opacity: .8; }
+.nav-item.active .nav-icon { opacity: 1; color: #c4b5fd; }
