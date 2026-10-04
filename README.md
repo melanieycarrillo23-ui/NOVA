@@ -208,3 +208,8 @@ docker compose stop
 El archivo `.env` contiene la configuración local y no debe incluirse en el repositorio. `.env.example` sirve como plantilla y debe mantenerse sin credenciales reales.
 
 Git conserva el código y los scripts del proyecto, pero no respalda automáticamente los datos almacenados en PostgreSQL. Los respaldos de la base de datos deben realizarse por separado.
+
+
+## Mockups
+
+Diseño de las pantallas de NOVA disponible en [Figma](https://www.figma.com/proto/oMpnUBOoVKqAfDum7Wmqz5/Untitled?node-id=3-274&p=f&t=iC6Y2Y7yGJTQ6ixa-1&scaling=min-zoom&content-scaling=fixed&page-id=0%3A1).
