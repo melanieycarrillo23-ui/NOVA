@@ -59,7 +59,7 @@ export class UsuariosAdminComponent implements OnInit {
     signal(false);
 
 
-  readonly rolesDisponibles: RolCodigo[] = ['ADMIN', 'ORGANIZADOR', 'STAFF', 'USUARIO'];
+  readonly rolesDisponibles: RolCodigo[] = ['ORGANIZADOR', 'STAFF'];
   rolesSeleccionados: Record<number, RolCodigo | ''> = {};
 
   rolesPendientes(usuario: Usuario): RolCodigo[] {
