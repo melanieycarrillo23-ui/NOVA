@@ -279,6 +279,23 @@
 
               </div>
 
+              <div class="role-assignment" *ngIf="rolesPendientes(usuario).length">
+                <select
+                  [attr.aria-label]="'Rol para ' + usuario.nombre_completo"
+                  [ngModel]="rolesSeleccionados[usuario.id] || ''"
+                  (ngModelChange)="rolesSeleccionados[usuario.id] = $event"
+                  [disabled]="procesandoId() !== null"
+                >
+                  <option value="">Seleccionar rol</option>
+                  <option *ngFor="let rol of rolesPendientes(usuario)" [value]="rol">{{ rol }}</option>
+                </select>
+                <button type="button" class="btn btn-secondary"
+                  [disabled]="!rolesSeleccionados[usuario.id] || procesandoId() !== null"
+                  (click)="asignarRol(usuario)">
+                  Asignar
+                </button>
+              </div>
+
             </td>
 
 

@@ -53,3 +53,8 @@ class CambiarEstadoUsuarioSerializer(serializers.Serializer):
     estado = serializers.ChoiceField(
         choices=Usuario.Estado.choices
     )
+
+
+class AsignarRolUsuarioSerializer(serializers.Serializer):
+    rol = serializers.ChoiceField(choices=['ADMIN', 'ORGANIZADOR', 'STAFF', 'USUARIO'])
+

@@ -39,3 +39,16 @@ def filtrar_eventos_visibles(queryset, usuario):
         visibles |= Q(equipo__usuario=usuario, equipo__estado=MiembroEquipoEvento.Estado.ACTIVO)
         visibles |= Q(inscripciones__usuario=usuario, inscripciones__estado='CONFIRMADA')
     return queryset.filter(visibles).distinct()
+
+
+def organiza_evento(usuario, evento):
+    """Identifica al creador o al organizador activo, sin excepción global de ADMIN."""
+    if not usuario or not usuario.is_authenticated:
+        return False
+    return evento.creado_por_id == usuario.pk or MiembroEquipoEvento.objects.filter(
+        evento=evento,
+        usuario=usuario,
+        rol__codigo='ORGANIZADOR',
+        estado=MiembroEquipoEvento.Estado.ACTIVO,
+    ).exists()
+

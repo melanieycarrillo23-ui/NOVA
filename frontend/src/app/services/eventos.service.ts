@@ -12,6 +12,7 @@ import {
   MiembroEquipoEvento,
   ReporteEvento,
   RolEquipoCodigo,
+  RolCodigo,
   TipoEntrada,
   Usuario,
   UsuarioEquipoBusqueda
@@ -444,6 +445,10 @@ export class EventosService {
     );
   }
 
+
+  asignarRolUsuario(id: number, rol: RolCodigo) {
+    return this.http.post<Usuario>(`${this.api}/usuarios/${id}/roles/`, { rol });
+  }
 
   cambiarEstadoUsuario(
     id: number,

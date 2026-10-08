@@ -140,7 +140,7 @@
               Entradas
             </h2>
 
-            <p class="secondary">
+            <p class="secondary" *ngIf="!evento.organiza_evento">
               Selecciona el tipo de entrada
               con el que deseas inscribirte.
             </p>
@@ -148,6 +148,10 @@
 
         </div>
 
+
+        <p class="notice" *ngIf="evento.organiza_evento">
+          Organizas este evento, por lo que no puedes inscribirte como asistente.
+        </p>
 
         <div class="tickets-list">
 
@@ -182,6 +186,7 @@
             <button
               type="button"
               class="btn btn-primary"
+              *ngIf="!evento.organiza_evento"
               (click)="inscribirme(tipo.id)"
             >
               Inscribirme

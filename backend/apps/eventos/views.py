@@ -40,6 +40,7 @@ from .models import (
 )
 
 from .permissions import (
+    organiza_evento,
     es_admin,
     es_organizador_evento,
     es_staff_evento,
@@ -1018,6 +1019,12 @@ class EventoViewSet(
         evento = self.get_object()
         evento = Evento.objects.select_for_update().get(pk=evento.pk)
 
+        if organiza_evento(request.user, evento):
+            return Response(
+                {'detail': 'No puedes inscribirte a un evento que organizas.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         if not usuario_tiene_permiso(
             request.user,
             'inscripciones.crear',
@@ -1795,6 +1802,14 @@ class EventoViewSet(
                         'con ese correo.',
                 })
 
+                continue
+
+            if organiza_evento(usuario, evento):
+                errores.append({
+                    'fila': numero_fila,
+                    'correo': correo,
+                    'detalle': 'No se puede inscribir a una persona que organiza este evento.',
+                })
                 continue
 
             tipo = (

@@ -16,6 +16,7 @@ export interface Lugar { id: number; nombre: string; direccion?: string; ciudad?
 export interface Evento {
   id: number;
   creado_por?: number;
+  organiza_evento?: boolean;
   creador_nombre?: string;
   categoria?: number | null;
   categoria_nombre?: string;

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from .permissions import organiza_evento
 from apps.cuentas.serializers import UsuarioSerializer
 from .models import (
     CategoriaEvento, Lugar, Evento, MiembroEquipoEvento, TipoEntrada,
@@ -19,6 +20,12 @@ class LugarSerializer(serializers.ModelSerializer):
 
 
 class EventoSerializer(serializers.ModelSerializer):
+    organiza_evento = serializers.SerializerMethodField()
+
+    def get_organiza_evento(self, obj):
+        request = self.context.get('request')
+        return organiza_evento(request.user, obj) if request else False
+
     categoria_nombre = serializers.CharField(source='categoria.nombre', read_only=True)
     lugar_nombre = serializers.CharField(source='lugar.nombre', read_only=True)
     creador_nombre = serializers.CharField(source='creado_por.nombre_completo', read_only=True)
@@ -26,7 +33,7 @@ class EventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evento
         fields = [
-            'id', 'creado_por', 'creador_nombre', 'categoria', 'categoria_nombre', 'lugar', 'lugar_nombre',
+            'id', 'creado_por', 'creador_nombre', 'organiza_evento', 'categoria', 'categoria_nombre', 'lugar', 'lugar_nombre',
             'nombre', 'identificador_url', 'descripcion_corta', 'descripcion', 'modalidad', 'visibilidad',
             'estado', 'capacidad', 'fecha_hora_inicio', 'fecha_hora_fin', 'inicio_inscripciones',
             'cierre_inscripciones', 'url_virtual', 'url_imagen_portada', 'creado_en', 'actualizado_en'

@@ -77,7 +77,7 @@ export class DetalleEventoComponent implements OnInit {
 
     const evento = this.evento();
 
-    if (!evento) {
+    if (!evento || evento.organiza_evento) {
       return;
     }
 

@@ -3,7 +3,7 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
-import { Usuario } from '../../models/models';
+import { RolCodigo, Usuario } from '../../models/models';
 import { AuthService } from '../../services/auth.service';
 import { EventosService } from '../../services/eventos.service';
 
@@ -58,6 +58,38 @@ export class UsuariosAdminComponent implements OnInit {
   tieneSiguiente =
     signal(false);
 
+
+  readonly rolesDisponibles: RolCodigo[] = ['ADMIN', 'ORGANIZADOR', 'STAFF', 'USUARIO'];
+  rolesSeleccionados: Record<number, RolCodigo | ''> = {};
+
+  rolesPendientes(usuario: Usuario): RolCodigo[] {
+    return this.rolesDisponibles.filter(rol => !usuario.roles.includes(rol));
+  }
+
+  asignarRol(usuario: Usuario): void {
+    const rol = this.rolesSeleccionados[usuario.id];
+    if (!rol || this.procesandoId() !== null || usuario.roles.includes(rol)) {
+      return;
+    }
+    if (!window.confirm(`¿Asignar el rol ${rol} a "${usuario.nombre_completo}"?`)) {
+      return;
+    }
+    this.procesandoId.set(usuario.id);
+    this.error.set('');
+    this.mensaje.set('');
+    this.api.asignarRolUsuario(usuario.id, rol).subscribe({
+      next: actualizado => {
+        this.items.update(items => items.map(item => item.id === actualizado.id ? actualizado : item));
+        this.rolesSeleccionados[usuario.id] = '';
+        this.procesandoId.set(null);
+        this.mensaje.set('Rol asignado. Si la persona tiene una sesión abierta, debe volver a iniciar sesión para actualizar sus menús.');
+      },
+      error: respuesta => {
+        this.procesandoId.set(null);
+        this.error.set(respuesta?.error?.detail || respuesta?.error?.rol?.[0] || 'No fue posible asignar el rol.');
+      }
+    });
+  }
 
   readonly tamanoPagina = 10;
 

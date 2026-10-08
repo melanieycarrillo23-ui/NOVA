@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Q
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -10,9 +11,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.auditoria.services import registrar_actividad
 
-from .models import Usuario
-from .permissions import PuedeGestionarUsuarios
+from .models import Rol, Usuario, UsuarioRol
+from .permissions import EsAdministrador, PuedeGestionarUsuarios
 from .serializers import (
+    AsignarRolUsuarioSerializer,
     CambiarEstadoUsuarioSerializer,
     CerrarSesionSerializer,
     NovaTokenObtainPairSerializer,
@@ -268,3 +270,31 @@ class UsuarioViewSet(
             status=
                 status.HTTP_200_OK
         )
+
+    @action(detail=True, methods=['post'], url_path='roles', permission_classes=[EsAdministrador])
+    @transaction.atomic
+    def asignar_rol(self, request, pk=None):
+        usuario = self.get_object()
+        serializer = AsignarRolUsuarioSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        codigo = serializer.validated_data['rol']
+        rol = Rol.objects.filter(codigo=codigo).first()
+        if rol is None:
+            return Response(
+                {'detail': 'El rol no está configurado. Ejecuta preparar_base antes de asignarlo.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        _, creado = UsuarioRol.objects.get_or_create(usuario=usuario, rol=rol)
+        if creado:
+            registrar_actividad(
+                usuario=request.user,
+                accion='USUARIO_ROL_ASIGNADO',
+                tipo_entidad='Usuario',
+                entidad_id=usuario.id,
+                metadatos={'rol': codigo, 'correo': usuario.correo},
+                request=request,
+            )
+        # El objeto original puede tener las asignaciones anteriores precargadas.
+        usuario._prefetched_objects_cache = {}
+        return Response(UsuarioSerializer(usuario).data, status=status.HTTP_200_OK)
+
